@@ -1,0 +1,151 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.27;
+
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+error MythNft__RangeOutOfBounds();
+error MythNft__NotEnoughTokensPaid();
+error MythNft__TransferFailed();
+
+contract MythNft is ERC721, VRFConsumerBaseV2Plus {
+    // Structures declarations
+    struct TokenStructure {
+        Rarity rarity;
+        string tokenUris;
+    }
+
+    // VRF Helpers
+    uint256 private immutable i_subscriptionId;
+    bytes32 private immutable i_gaslane;
+    uint32 private immutable i_callbackGasLimit;
+    uint16 private constant REQUEST_CONFIRMATIONS = 3;
+    uint32 private constant NUM_WORDS = 1;
+    mapping(uint256 => address) public s_requestIdToSender;
+
+    // NFT variable
+    uint256 public s_tokenCounter;
+    uint256 internal constant MAX_CHANCE_VALUE = 100;
+    uint256 internal constant MAX_NUMBER_OF_COLLECTION = 34;
+    string[] internal s_tokenUris;
+    uint256 internal immutable i_mintFee;
+    mapping(address => TokenStructure[]) mintedTokens;
+
+    // Events
+    event NftRequested(uint256 indexed requestId, address requester);
+    event NftMinted(Rarity rarity, address minter);
+
+    // Type declarations
+    enum Rarity {
+        COMMON,
+        RARE,
+        MYTHIC
+    }
+
+    constructor(
+        address vrfClientAddress,
+        uint256 subscriptionId,
+        bytes32 gasLane,
+        uint32 callbackGasLimit,
+        string[MAX_NUMBER_OF_COLLECTION] memory tokenUris,
+        uint256 mintFee
+    ) ERC721("Mythology Nft", "MTNFT") VRFConsumerBaseV2Plus(vrfClientAddress) {
+        i_subscriptionId = subscriptionId;
+        i_gaslane = gasLane;
+        i_callbackGasLimit = callbackGasLimit;
+        s_tokenUris = tokenUris;
+        i_mintFee = mintFee;
+    }
+
+    function withDraw() public {}
+
+    function requestNft(uint256 price) public returns (uint256 requestId) {
+        // TODO: call token contract to validate if requester has enough tokens
+        // else revert
+
+        requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: i_gaslane,
+                subId: uint64(i_subscriptionId),
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: i_callbackGasLimit,
+                numWords: NUM_WORDS,
+                // Allow request to pay with ETH instead of LINK
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
+        );
+
+        s_requestIdToSender[requestId] = msg.sender;
+
+        emit NftRequested(requestId, msg.sender);
+    }
+
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] calldata randomWords
+    ) internal override {
+        address nftOwner = s_requestIdToSender[requestId];
+        uint256 newTokenId = s_tokenCounter;
+
+        uint256 moddedRng = randomWords[0] % MAX_NUMBER_OF_COLLECTION;
+        uint256 rarityRng = randomWords[1] % MAX_CHANCE_VALUE;
+
+        Rarity rarity = getRarityFromRarityRng(rarityRng);
+        s_tokenCounter++;
+
+        _safeMint(nftOwner, newTokenId);
+
+        // TODO: Study better way to set this
+        // _setTokenURI(newTokenId, s_tokenUris[uint256(rarity)]);
+        emit NftMinted(rarity, nftOwner);
+    }
+
+    function getRarityFromRarityRng(
+        uint256 rarityRng
+    ) public pure returns (Rarity) {
+        uint256 cumulativeSum = 0;
+        uint256[3] memory chanceArray = getChanceArray();
+
+        for (uint256 i = 0; i < chanceArray.length; i++) {
+            if (
+                rarityRng >= cumulativeSum &&
+                rarityRng < cumulativeSum + chanceArray[i]
+            ) {
+                return Rarity(i);
+            }
+            cumulativeSum += chanceArray[i];
+        }
+
+        revert MythNft__RangeOutOfBounds();
+    }
+
+    function getChanceArray() public pure returns (uint256[3] memory) {
+        return [90, 99, MAX_CHANCE_VALUE];
+    }
+
+    function getMintFee() public view returns (uint256) {
+        return i_mintFee;
+    }
+
+    function getTokenUris(uint256 index) public view returns (string memory) {
+        return s_tokenUris[index];
+    }
+
+    function getTokenCounter() public view returns (uint256) {
+        return s_tokenCounter;
+    }
+
+    function getTokensForAddress(
+        address owner
+    ) public view returns (TokenStructure[] memory) {
+        return mintedTokens[owner];
+    }
+
+    function getTokenByTokenId(
+        uint256 tokenId
+    ) public view returns (TokenStructure memory) {}
+}
