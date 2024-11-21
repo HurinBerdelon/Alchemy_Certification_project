@@ -16,7 +16,10 @@ error MythToken__NotApprovedToTransfer();
 contract MythToken is IMythToken, ERC20 {
     mapping(address => uint256) private s_proceeds;
 
-    constructor() ERC20("MythCoin", "MTC") {}
+    constructor(
+        string memory _tokenName,
+        string memory _tokenSymbol
+    ) ERC20(_tokenName, _tokenSymbol) {}
 
     // To be called by another contract (MythNft)
     function handleMint(address minter, uint256 value) external returns (bool) {
@@ -41,11 +44,7 @@ contract MythToken is IMythToken, ERC20 {
     }
 
     // To be called by another contract (MythNftMarketplace)
-    function handleBuy(
-        address buyer,
-        address seller,
-        uint256 value
-    ) external returns (bool) {
+    function handleBuy(address buyer, address seller, uint256 value) external returns (bool) {
         uint256 balance = balanceOf(buyer);
 
         if (balance < value) {
