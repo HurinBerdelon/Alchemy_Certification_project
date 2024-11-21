@@ -43,6 +43,8 @@ contract MythNftMarketplace is ReentrancyGuard {
         uint256 indexed tokenId
     );
 
+    address internal immutable i_mythTokenAddress;
+
     mapping(address => mapping(uint256 => Listing)) private s_listings;
 
     modifier notListed(
@@ -78,6 +80,10 @@ contract MythNftMarketplace is ReentrancyGuard {
         _;
     }
 
+    constructor(address mythTokenAddress) {
+        i_mythTokenAddress = mythTokenAddress;
+    }
+
     function listItem(
         address nftAddress,
         uint256 tokenId,
@@ -107,7 +113,7 @@ contract MythNftMarketplace is ReentrancyGuard {
         Listing memory listedItem = s_listings[nftAddress][tokenId];
 
         // get buyer balance in Token contract, remove this amount from his balance and add to proceed mapping in token contract
-        bool success = IMythToken(nftAddress).handleBuy(
+        bool success = IMythToken(i_mythTokenAddress).handleBuy(
             msg.sender,
             listedItem.seller,
             listedItem.price
@@ -162,10 +168,14 @@ contract MythNftMarketplace is ReentrancyGuard {
         emit ItemListed(msg.sender, nftAddress, tokenId, newPrice);
     }
 
-    function getListing(
+    function getListingByTokenId(
         address nftAddress,
         uint256 tokenId
     ) external view returns (Listing memory) {
         return s_listings[nftAddress][tokenId];
+    }
+
+    function getMythToken() external view returns (address) {
+        return i_mythTokenAddress;
     }
 }

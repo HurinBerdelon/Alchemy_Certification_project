@@ -15,7 +15,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     // Structures declarations
     struct TokenStructure {
         Rarity rarity;
-        string tokenUris;
+        string tokenUri;
     }
 
     // VRF Helpers
@@ -32,7 +32,9 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     uint256 internal constant MAX_NUMBER_OF_COLLECTION = 34;
     string[] internal s_tokenUris;
     uint256 internal immutable i_mintFee;
-    mapping(address => TokenStructure[]) mintedTokens;
+
+    mapping(uint256 tokenId => TokenStructure) s_mythNftToken;
+    address internal immutable i_mythTokenAddress;
 
     // Events
     event NftRequested(uint256 indexed requestId, address requester);
@@ -51,20 +53,31 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         bytes32 gasLane,
         uint32 callbackGasLimit,
         string[MAX_NUMBER_OF_COLLECTION] memory tokenUris,
-        uint256 mintFee
+        uint256 mintFee,
+        address mythTokenAddress
     ) ERC721("Mythology Nft", "MTNFT") VRFConsumerBaseV2Plus(vrfClientAddress) {
         i_subscriptionId = subscriptionId;
         i_gaslane = gasLane;
         i_callbackGasLimit = callbackGasLimit;
         s_tokenUris = tokenUris;
         i_mintFee = mintFee;
+        i_mythTokenAddress = mythTokenAddress;
     }
 
     function withDraw() public {}
 
     function requestNft(uint256 price) public returns (uint256 requestId) {
-        // TODO: call token contract to validate if requester has enough tokens
+        // call token contract to validate if requester has enough tokens
         // else revert
+
+        bool success = IMythToken(i_mythTokenAddress).handleMint(
+            msg.sender,
+            price
+        );
+
+        if (!success) {
+            revert MythNft__NotEnoughTokensPaid();
+        }
 
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -100,8 +113,11 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
 
         _safeMint(nftOwner, newTokenId);
 
-        // TODO: Study better way to set this
-        // _setTokenURI(newTokenId, s_tokenUris[uint256(rarity)]);
+        s_mythNftToken[newTokenId] = TokenStructure({
+            rarity: rarity,
+            tokenUri: s_tokenUris[moddedRng]
+        });
+
         emit NftMinted(rarity, nftOwner);
     }
 
@@ -140,13 +156,11 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         return s_tokenCounter;
     }
 
-    function getTokensForAddress(
-        address owner
-    ) public view returns (TokenStructure[] memory) {
-        return mintedTokens[owner];
-    }
-
     function getTokenByTokenId(
         uint256 tokenId
     ) public view returns (TokenStructure memory) {}
+
+    function getMythToken() external view returns (address) {
+        return i_mythTokenAddress;
+    }
 }

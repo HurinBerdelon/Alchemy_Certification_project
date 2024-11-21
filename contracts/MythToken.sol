@@ -18,6 +18,28 @@ contract MythToken is IMythToken, ERC20 {
 
     constructor() ERC20("MythCoin", "MTC") {}
 
+    // To be called by another contract (MythNft)
+    function handleMint(address minter, uint256 value) external returns (bool) {
+        uint256 balance = balanceOf(minter);
+
+        if (balance < value) {
+            revert MythToken__NotEnoughToken();
+        }
+
+        // approve msg.sender (it means the MythNft Contract to transferFrom)
+        bool approved = approve(msg.sender, value);
+        if (!approved) {
+            revert MythToken__NotApprovedToTransfer();
+        }
+
+        bool success = transferFrom(minter, address(this), value);
+        if (!success) {
+            revert MythToken__TransferFailed();
+        }
+
+        return true;
+    }
+
     // To be called by another contract (MythNftMarketplace)
     function handleBuy(
         address buyer,
@@ -32,7 +54,7 @@ contract MythToken is IMythToken, ERC20 {
 
         s_proceeds[seller] += value;
 
-        // approve msg.sender (it means the NftMarketplace Contract to transferFrom)
+        // approve msg.sender (it means the MythNftMarketplace Contract to transferFrom)
         bool approved = approve(msg.sender, value);
         if (!approved) {
             revert MythToken__NotApprovedToTransfer();
