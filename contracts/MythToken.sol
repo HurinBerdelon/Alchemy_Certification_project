@@ -16,14 +16,22 @@ error MythToken__NotApprovedToTransfer();
 contract MythToken is IMythToken, ERC20 {
     mapping(address => uint256) private s_proceeds;
 
-    address private s_owner;
-
     constructor(
         string memory _tokenName,
         string memory _tokenSymbol,
         uint256 _initialSupply
     ) ERC20(_tokenName, _tokenSymbol) {
-        _mint(msg.sender, _initialSupply);
+        _mint(address(this), _initialSupply);
+    }
+
+    function internalApprove(address spender, uint256 value) internal {
+        _approve(address(this), spender, value);
+    }
+
+    // When minting token for user, burn some from the contract itself
+    function mintForUser(address to, uint256 value) external {
+        _burn(address(this), value);
+        _mint(to, value);
     }
 
     // To be called by another contract (MythNft)
@@ -34,18 +42,9 @@ contract MythToken is IMythToken, ERC20 {
             revert MythToken__NotEnoughToken();
         }
 
-        // approve msg.sender (it means the MythNft Contract to transferFrom)
-        bool approved = approve(msg.sender, value);
-        if (!approved) {
-            revert MythToken__NotApprovedToTransfer();
-        }
+        bool success = transferFrom(minter, address(this), value);
 
-        bool success = transferFrom(minter, s_owner, value);
-        if (!success) {
-            revert MythToken__TransferFailed();
-        }
-
-        return true;
+        return success;
     }
 
     // To be called by another contract (MythNftMarketplace)
@@ -58,22 +57,13 @@ contract MythToken is IMythToken, ERC20 {
 
         s_proceeds[seller] += value;
 
-        // approve msg.sender (it means the MythNftMarketplace Contract to transferFrom)
-        bool approved = approve(msg.sender, value);
-        if (!approved) {
-            revert MythToken__NotApprovedToTransfer();
-        }
+        bool success = transferFrom(buyer, address(this), value);
 
-        bool success = transferFrom(buyer, s_owner, value);
-        if (!success) {
-            revert MythToken__TransferFailed();
-        }
-
-        return true;
+        return success;
     }
 
     // To be called by end user
-    function withdrawProceeds() external {
+    function withdrawProceeds() external returns (bool) {
         uint256 proceeds = s_proceeds[msg.sender];
         if (proceeds <= 0) {
             revert MythToken__NoProceeds();
@@ -81,19 +71,14 @@ contract MythToken is IMythToken, ERC20 {
 
         s_proceeds[msg.sender] = 0;
 
-        bool success = transferFrom(s_owner, msg.sender, proceeds);
+        internalApprove(msg.sender, proceeds);
+        bool success = transferFrom(address(this), msg.sender, proceeds);
 
-        if (!success) {
-            revert MythToken__WithdrawFailed();
-        }
+        return success;
     }
 
     // To be called by end user
-    function getProceeds(address seller) external view returns (uint256) {
-        return s_proceeds[seller];
-    }
-
-    function getOwner() external view returns (address) {
-        return s_owner;
+    function getProceeds() external view returns (uint256) {
+        return s_proceeds[msg.sender];
     }
 }
