@@ -1,9 +1,12 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules"
 
 const MythTokenModule = buildModule("MythTokenModule", (module) => {
-    const token = module.contract("MythToken", ["Myth Token Coin", "MTC"])
+    const deployer = module.getAccount(0)
+    const contract = module.contract("MythToken", ["Myth Token Coin", "MTC", 1e9], {
+        from: deployer,
+    })
 
-    return { token }
+    return { contract }
 })
 
 export default MythTokenModule

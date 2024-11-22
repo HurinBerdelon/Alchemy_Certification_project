@@ -1,10 +1,12 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
+import { HardhatUserConfig } from "hardhat/config"
+import "@nomicfoundation/hardhat-toolbox"
+import dotenv from "dotenv"
 
-const SEPOLIA_RPC_URL =
-    process.env.SEPOLIA_RPC_URL || "http://eth-sepolia/example";
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "0xKEY";
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "0xKEY";
+dotenv.config()
+
+const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "http://eth-sepolia/example"
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "0xKEY"
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "0xKEY"
 
 const config: HardhatUserConfig = {
     solidity: "0.8.27",
@@ -29,6 +31,9 @@ const config: HardhatUserConfig = {
     mocha: {
         timeout: 300000, // 300 seconds
     },
-};
+    ignition: {
+        // requiredConfirmations: 6,
+    },
+}
 
-export default config;
+export default config
