@@ -16,13 +16,18 @@ error MythToken__NotApprovedToTransfer();
 contract MythToken is IMythToken, ERC20 {
     mapping(address => uint256) private s_proceeds;
 
+    address private s_owner;
+
     constructor(
         string memory _tokenName,
-        string memory _tokenSymbol
-    ) ERC20(_tokenName, _tokenSymbol) {}
+        string memory _tokenSymbol,
+        uint256 _initialSupply
+    ) ERC20(_tokenName, _tokenSymbol) {
+        _mint(msg.sender, _initialSupply);
+    }
 
     // To be called by another contract (MythNft)
-    function handleMint(address minter, uint256 value) external returns (bool) {
+    function handleMintNFT(address minter, uint256 value) external returns (bool) {
         uint256 balance = balanceOf(minter);
 
         if (balance < value) {
@@ -35,7 +40,7 @@ contract MythToken is IMythToken, ERC20 {
             revert MythToken__NotApprovedToTransfer();
         }
 
-        bool success = transferFrom(minter, address(this), value);
+        bool success = transferFrom(minter, s_owner, value);
         if (!success) {
             revert MythToken__TransferFailed();
         }
@@ -59,7 +64,7 @@ contract MythToken is IMythToken, ERC20 {
             revert MythToken__NotApprovedToTransfer();
         }
 
-        bool success = transferFrom(buyer, address(this), value);
+        bool success = transferFrom(buyer, s_owner, value);
         if (!success) {
             revert MythToken__TransferFailed();
         }
@@ -76,7 +81,7 @@ contract MythToken is IMythToken, ERC20 {
 
         s_proceeds[msg.sender] = 0;
 
-        bool success = transfer(msg.sender, proceeds);
+        bool success = transferFrom(s_owner, msg.sender, proceeds);
 
         if (!success) {
             revert MythToken__WithdrawFailed();
@@ -86,5 +91,9 @@ contract MythToken is IMythToken, ERC20 {
     // To be called by end user
     function getProceeds(address seller) external view returns (uint256) {
         return s_proceeds[seller];
+    }
+
+    function getOwner() external view returns (address) {
+        return s_owner;
     }
 }

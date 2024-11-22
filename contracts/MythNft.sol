@@ -70,10 +70,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         // call token contract to validate if requester has enough tokens
         // else revert
 
-        bool success = IMythToken(i_mythTokenAddress).handleMint(
-            msg.sender,
-            price
-        );
+        bool success = IMythToken(i_mythTokenAddress).handleMintNFT(msg.sender, price);
 
         if (!success) {
             revert MythNft__NotEnoughTokensPaid();
@@ -121,17 +118,12 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         emit NftMinted(rarity, nftOwner);
     }
 
-    function getRarityFromRarityRng(
-        uint256 rarityRng
-    ) public pure returns (Rarity) {
+    function getRarityFromRarityRng(uint256 rarityRng) public pure returns (Rarity) {
         uint256 cumulativeSum = 0;
         uint256[3] memory chanceArray = getChanceArray();
 
         for (uint256 i = 0; i < chanceArray.length; i++) {
-            if (
-                rarityRng >= cumulativeSum &&
-                rarityRng < cumulativeSum + chanceArray[i]
-            ) {
+            if (rarityRng >= cumulativeSum && rarityRng < cumulativeSum + chanceArray[i]) {
                 return Rarity(i);
             }
             cumulativeSum += chanceArray[i];
@@ -156,9 +148,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         return s_tokenCounter;
     }
 
-    function getTokenByTokenId(
-        uint256 tokenId
-    ) public view returns (TokenStructure memory) {}
+    function getTokenByTokenId(uint256 tokenId) public view returns (TokenStructure memory) {}
 
     function getMythToken() external view returns (address) {
         return i_mythTokenAddress;
