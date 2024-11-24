@@ -50,14 +50,14 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     constructor(
         address vrfClientAddress,
         uint256 subscriptionId,
-        bytes32 gasLane,
+        bytes32 gaslane,
         uint32 callbackGasLimit,
         string[MAX_NUMBER_OF_COLLECTION] memory tokenUris,
         uint256 mintFee,
         address mythTokenAddress
     ) ERC721("Mythology Nft", "MTNFT") VRFConsumerBaseV2Plus(vrfClientAddress) {
         i_subscriptionId = subscriptionId;
-        i_gaslane = gasLane;
+        i_gaslane = gaslane;
         i_callbackGasLimit = callbackGasLimit;
         s_tokenUris = tokenUris;
         i_mintFee = mintFee;
