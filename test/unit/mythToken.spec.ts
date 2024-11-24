@@ -1,13 +1,11 @@
-import { ethers, ignition, network } from "hardhat"
-import { developmentChains } from "../../helper-hardhat-config"
+import { ethers, ignition } from "hardhat"
 import { expect } from "chai"
 import MythTokenModule from "../../ignition/modules/MythToken"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
 import { Contract } from "ethers"
 import { MythToken } from "../../typechain-types"
 
-describe("Myth Token Contract", () => {
-    let deployer: HardhatEthersSigner
+describe("MythToken Contract", () => {
     let user: HardhatEthersSigner
     let externalContract: HardhatEthersSigner
     let sellerUser: HardhatEthersSigner
@@ -17,7 +15,6 @@ describe("Myth Token Contract", () => {
 
     beforeEach(async () => {
         const accounts = await ethers.getSigners()
-        deployer = accounts[0]
         user = accounts[1]
         externalContract = accounts[2]
         sellerUser = accounts[3]
@@ -35,7 +32,7 @@ describe("Myth Token Contract", () => {
     })
 
     describe("Constructor", () => {
-        it("should construct contract with correct name, symbol", async () => {
+        it("should build contract with correct name, symbol", async () => {
             const name = await mythToken.name()
             const symbol = await mythToken.symbol()
 
