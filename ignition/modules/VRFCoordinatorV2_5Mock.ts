@@ -1,4 +1,4 @@
-import { buildModule } from "@nomicfoundation/ignition-core"
+import { buildModule } from "@nomicfoundation/hardhat-ignition/modules"
 import { ethers } from "hardhat"
 
 const BASE_FEE = ethers.parseEther("0.25")
