@@ -1,9 +1,10 @@
-import { ethers, ignition, network } from "hardhat"
-import VRFCoordinatorV2_5MockModule from "../ignition/modules/VRFCoordinatorV2_5Mock"
-import { developmentChains, mythTokenAddress, networkConfig } from "../helper-hardhat-config"
-import MythNftModule from "../ignition/modules/MythNft"
-import { Contract } from "ethers"
+import { ethers, network } from "hardhat"
+import { ContractTransactionReceipt, ContractTransactionResponse } from "ethers"
+
+import { VRFCoordinatorV2_5Mock } from "../typechain-types"
 import verify from "../utils/verify"
+import { developmentChains, mythTokenAddress, networkConfig } from "../helper-hardhat-config"
+import { deployMock } from "./00-deploy-mocks"
 
 const FUND_AMOUNT = ethers.parseEther("1000")
 
@@ -11,34 +12,40 @@ interface DeployMythNftParams {
     tokenUris?: string[]
     _mythTokenAddress?: string
     maxNumberOfCollection?: number
+    log?: boolean
 }
 
 export const deployMythNft = async ({
     tokenUris = new Array(34).fill(""),
     _mythTokenAddress = mythTokenAddress,
     maxNumberOfCollection = 34,
+    log = false,
 }: DeployMythNftParams) => {
+    const contractName = "MythNft"
+
     const chainId = network.config.chainId ?? 31337
-
-    const contract = await ethers.getContractFactory("MythNft")
-
     const gaslane = networkConfig[chainId].gaslane
     const callbackGasLimit = networkConfig[chainId].callbackGasLimit
     const mintFee = networkConfig[chainId].mintFee
 
     let vrfCoordinatorV2_5Address: string
     let subscriptionId: string
-    let vrfCoordinatorV2_5Mock: { contract: Contract } | undefined = undefined
+    let vrfCoordinatorV2_5Mock:
+        | (VRFCoordinatorV2_5Mock & {
+              deploymentTransaction(): ContractTransactionResponse
+          })
+        | undefined
 
     if (chainId === 31337) {
-        vrfCoordinatorV2_5Mock = await ignition.deploy(VRFCoordinatorV2_5MockModule)
-        vrfCoordinatorV2_5Address = await vrfCoordinatorV2_5Mock.contract.getAddress()
-        const transactionResponse = await vrfCoordinatorV2_5Mock.contract.createSubscription()
-        const transactionReceipt = await transactionResponse.wait(1)
+        vrfCoordinatorV2_5Mock = await deployMock()
+        vrfCoordinatorV2_5Address = await vrfCoordinatorV2_5Mock.getAddress()
+        const transactionResponse = await vrfCoordinatorV2_5Mock.createSubscription()
+        const transactionReceipt = (await transactionResponse.wait(1)) as ContractTransactionReceipt
 
+        // @ts-ignore
         subscriptionId = transactionReceipt.logs[0].args[0]
 
-        await vrfCoordinatorV2_5Mock.contract.fundSubscription(subscriptionId, FUND_AMOUNT)
+        await vrfCoordinatorV2_5Mock.fundSubscription(subscriptionId, FUND_AMOUNT)
     } else {
         vrfCoordinatorV2_5Address = networkConfig[chainId].vrfCoordinatorV2_5Address as string
         subscriptionId = networkConfig[chainId].subscriptionId as string
@@ -46,42 +53,48 @@ export const deployMythNft = async ({
 
     const vrfClientAddress = vrfCoordinatorV2_5Address
 
-    const mythNft = await ignition.deploy(MythNftModule, {
-        parameters: {
-            MythNftModule: {
-                subscriptionId,
-                tokenUris,
-                vrfClientAddress: vrfCoordinatorV2_5Address,
-                mythTokenAddress: _mythTokenAddress,
-                maxNumberOfCollection,
-            },
-        },
-    })
+    const args = [
+        vrfClientAddress,
+        subscriptionId,
+        gaslane,
+        callbackGasLimit,
+        maxNumberOfCollection,
+        tokenUris,
+        mintFee,
+        _mythTokenAddress,
+    ]
 
-    const mythNftAddress = await mythNft.contract.getAddress()
+    const contractFactory = await ethers.getContractFactory(contractName)
+    const mythNft = await contractFactory.deploy(
+        vrfClientAddress,
+        subscriptionId,
+        gaslane,
+        callbackGasLimit,
+        maxNumberOfCollection,
+        tokenUris,
+        mintFee,
+        _mythTokenAddress
+    )
+
+    const mythNftAddress = await mythNft.getAddress()
 
     if (chainId === 31337 && vrfCoordinatorV2_5Mock !== undefined) {
-        await vrfCoordinatorV2_5Mock.contract.addConsumer(subscriptionId, mythNftAddress)
-        const transactionResponse = await vrfCoordinatorV2_5Mock.contract.createSubscription()
+        await vrfCoordinatorV2_5Mock.addConsumer(subscriptionId, mythNftAddress)
+        const transactionResponse = await vrfCoordinatorV2_5Mock.createSubscription()
         await transactionResponse.wait(1)
     }
 
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-        const args = [
-            vrfClientAddress,
-            subscriptionId,
-            gaslane,
-            callbackGasLimit,
-            maxNumberOfCollection,
-            tokenUris,
-            mintFee,
-            _mythTokenAddress,
-        ]
-
         await verify(mythNftAddress, args)
     }
 
-    return { contract: mythNft.contract }
+    const contractAddress = await mythNft.getAddress()
+
+    if (log) {
+        console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
+    }
+
+    return mythNft
 }
 
-deployMythNft({}).catch((error) => console.log(error))
+deployMythNft({ log: true }).catch((error) => console.log(error))

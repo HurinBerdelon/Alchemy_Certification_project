@@ -1,15 +1,18 @@
-import { ethers, ignition } from "hardhat"
+import { ethers } from "hardhat"
 import { expect } from "chai"
-import MythTokenModule from "../../ignition/modules/MythToken"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
-import { Contract } from "ethers"
+import { ContractTransactionResponse } from "ethers"
+
 import { MythToken } from "../../typechain-types"
+import { deployMythToken } from "../../script/01-deploy-MythToken"
 
 describe("MythToken Contract", () => {
     let user: HardhatEthersSigner
     let externalContract: HardhatEthersSigner
     let sellerUser: HardhatEthersSigner
-    let mythToken: Contract
+    let mythToken: MythToken & {
+        deploymentTransaction(): ContractTransactionResponse
+    }
     let fundUser: (user?: HardhatEthersSigner, amount?: number) => Promise<{ userBalance: number }>
     const AMOUNT = 500
     const mintFee = AMOUNT / 2
@@ -20,8 +23,7 @@ describe("MythToken Contract", () => {
         externalContract = accounts[2]
         sellerUser = accounts[3]
 
-        const { contract: _mythToken } = await ignition.deploy(MythTokenModule)
-        mythToken = _mythToken
+        mythToken = await deployMythToken()
 
         fundUser = async (_user = user, amount = AMOUNT) => {
             await mythToken.mintForUser(_user, amount)
