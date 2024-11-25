@@ -1,15 +1,15 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
-
-// Uncomment this line to use console.log
-// import "hardhat/console.sol";
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
+import "hardhat/console.sol";
+
 error MythToken__NoProceeds();
 error MythToken__WithdrawFailed();
-error MythToken__NotEnoughToken();
+error MythToken__NotEnoughBalance();
+error MythToken__NotEnoughTokenSent();
 error MythToken__TransferFailed();
 error MythToken__NotApprovedToTransfer();
 
@@ -39,7 +39,7 @@ contract MythToken is IMythToken, ERC20 {
         uint256 balance = balanceOf(minter);
 
         if (balance < value) {
-            revert MythToken__NotEnoughToken();
+            revert MythToken__NotEnoughBalance();
         }
 
         bool success = transferFrom(minter, address(this), value);
@@ -52,7 +52,7 @@ contract MythToken is IMythToken, ERC20 {
         uint256 balance = balanceOf(buyer);
 
         if (balance < value) {
-            revert MythToken__NotEnoughToken();
+            revert MythToken__NotEnoughBalance();
         }
 
         s_proceeds[seller] += value;

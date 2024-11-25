@@ -7,9 +7,12 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFCo
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
+import "hardhat/console.sol";
+
 error MythNft__RangeOutOfBounds();
 error MythNft__NotEnoughTokensPaid();
 error MythNft__TransferFailed();
+error MythNft__NotEnoughBalance();
 
 contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     // Structures declarations
@@ -29,7 +32,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     // NFT variable
     uint256 public s_tokenCounter;
     uint256 internal constant MAX_CHANCE_VALUE = 100;
-    uint256 internal constant MAX_NUMBER_OF_COLLECTION = 34;
+    uint256 internal immutable i_maxNumberOfCollection;
     string[] internal s_tokenUris;
     uint256 internal immutable i_mintFee;
 
@@ -52,34 +55,35 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         uint256 subscriptionId,
         bytes32 gaslane,
         uint32 callbackGasLimit,
-        string[MAX_NUMBER_OF_COLLECTION] memory tokenUris,
+        uint256 maxNumberOfCollection,
+        string[] memory tokenUris,
         uint256 mintFee,
         address mythTokenAddress
     ) ERC721("Mythology Nft", "MTNFT") VRFConsumerBaseV2Plus(vrfClientAddress) {
         i_subscriptionId = subscriptionId;
         i_gaslane = gaslane;
+        i_maxNumberOfCollection = maxNumberOfCollection;
         i_callbackGasLimit = callbackGasLimit;
         s_tokenUris = tokenUris;
         i_mintFee = mintFee;
         i_mythTokenAddress = mythTokenAddress;
     }
 
-    function withDraw() public {}
-
     function requestNft(uint256 price) public returns (uint256 requestId) {
-        // call token contract to validate if requester has enough tokens
-        // else revert
+        if (price < i_mintFee) {
+            revert MythNft__NotEnoughTokensPaid();
+        }
 
         bool success = IMythToken(i_mythTokenAddress).handleMintNFT(msg.sender, price);
 
         if (!success) {
-            revert MythNft__NotEnoughTokensPaid();
+            revert MythNft__NotEnoughBalance();
         }
 
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: i_gaslane,
-                subId: uint64(i_subscriptionId),
+                subId: i_subscriptionId,
                 requestConfirmations: REQUEST_CONFIRMATIONS,
                 callbackGasLimit: i_callbackGasLimit,
                 numWords: NUM_WORDS,
@@ -102,7 +106,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         address nftOwner = s_requestIdToSender[requestId];
         uint256 newTokenId = s_tokenCounter;
 
-        uint256 moddedRng = randomWords[0] % MAX_NUMBER_OF_COLLECTION;
+        uint256 moddedRng = randomWords[0] % i_maxNumberOfCollection;
         uint256 rarityRng = randomWords[1] % MAX_CHANCE_VALUE;
 
         Rarity rarity = getRarityFromRarityRng(rarityRng);
