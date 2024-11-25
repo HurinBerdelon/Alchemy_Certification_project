@@ -4,6 +4,8 @@ pragma solidity ^0.8.27;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
+import "hardhat/console.sol";
+
 error MythToken__NoProceeds();
 error MythToken__WithdrawFailed();
 error MythToken__NotEnoughBalance();

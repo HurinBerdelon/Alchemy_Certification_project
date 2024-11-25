@@ -6,12 +6,13 @@ const MythNftModule = buildModule("MythNftModule", (module) => {
     const subscriptionId = module.getParameter("subscriptionId")
     const vrfClientAddress = module.getParameter("vrfClientAddress")
     const mythTokenAddress = module.getParameter("mythTokenAddress")
+    const tokenUris = module.getParameter("tokenUris")
+    const maxNumberOfCollection = module.getParameter("maxNumberOfCollection")
 
     const chainId = network.config.chainId ?? 31337
 
     const gaslane = networkConfig[chainId].gaslane
     const callbackGasLimit = networkConfig[chainId].callbackGasLimit
-    const tokenUris = ["", ""]
     const mintFee = networkConfig[chainId].mintFee
 
     const args = [
@@ -19,6 +20,7 @@ const MythNftModule = buildModule("MythNftModule", (module) => {
         subscriptionId,
         gaslane,
         callbackGasLimit,
+        maxNumberOfCollection,
         tokenUris,
         mintFee,
         mythTokenAddress,

@@ -13,7 +13,7 @@ const networkConfig: { [key: number]: NetworkConfig } = {
         name: "localhost",
         ethUsdPriceFeed: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
         gaslane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", // 30 gwei
-        mintFee: "10000000000000000", // 0.01 ETH
+        mintFee: "100", // 0.01 ETH
         callbackGasLimit: "500000", // 500,000 gas
     },
     // Price Feed Address, values can be obtained at https://docs.chain.link/data-feeds/price-feeds/addresses
@@ -21,7 +21,7 @@ const networkConfig: { [key: number]: NetworkConfig } = {
         name: "sepolia",
         ethUsdPriceFeed: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
         gaslane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", // 30 gwei
-        mintFee: "10000000000000000", // 0.01 ETH
+        mintFee: "100", // 0.01 ETH
         callbackGasLimit: "500000", // 500,000 gas
         vrfCoordinatorV2_5Address: "",
         subscriptionId: "",

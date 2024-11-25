@@ -10,13 +10,17 @@ const FUND_AMOUNT = ethers.parseEther("1000")
 interface DeployMythNftParams {
     tokenUris?: string[]
     _mythTokenAddress?: string
+    maxNumberOfCollection?: number
 }
 
 export const deployMythNft = async ({
-    tokenUris = new Array(34),
+    tokenUris = new Array(34).fill(""),
     _mythTokenAddress = mythTokenAddress,
+    maxNumberOfCollection = 34,
 }: DeployMythNftParams) => {
     const chainId = network.config.chainId ?? 31337
+
+    const contract = await ethers.getContractFactory("MythNft")
 
     const gaslane = networkConfig[chainId].gaslane
     const callbackGasLimit = networkConfig[chainId].callbackGasLimit
@@ -42,22 +46,14 @@ export const deployMythNft = async ({
 
     const vrfClientAddress = vrfCoordinatorV2_5Address
 
-    const args = [
-        vrfClientAddress,
-        subscriptionId,
-        gaslane,
-        callbackGasLimit,
-        tokenUris,
-        mintFee,
-        _mythTokenAddress,
-    ]
-
     const mythNft = await ignition.deploy(MythNftModule, {
         parameters: {
             MythNftModule: {
                 subscriptionId,
+                tokenUris,
                 vrfClientAddress: vrfCoordinatorV2_5Address,
                 mythTokenAddress: _mythTokenAddress,
+                maxNumberOfCollection,
             },
         },
     })
@@ -65,14 +61,23 @@ export const deployMythNft = async ({
     const mythNftAddress = await mythNft.contract.getAddress()
 
     if (chainId === 31337 && vrfCoordinatorV2_5Mock !== undefined) {
-        const transactionResponse = await vrfCoordinatorV2_5Mock.contract.addConsumer(
-            subscriptionId,
-            mythNftAddress
-        )
+        await vrfCoordinatorV2_5Mock.contract.addConsumer(subscriptionId, mythNftAddress)
+        const transactionResponse = await vrfCoordinatorV2_5Mock.contract.createSubscription()
         await transactionResponse.wait(1)
     }
 
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
+        const args = [
+            vrfClientAddress,
+            subscriptionId,
+            gaslane,
+            callbackGasLimit,
+            maxNumberOfCollection,
+            tokenUris,
+            mintFee,
+            _mythTokenAddress,
+        ]
+
         await verify(mythNftAddress, args)
     }
 
