@@ -65,12 +65,18 @@ export const deployMythNft = async ({
     const mythNftAddress = await mythNft.contract.getAddress()
 
     if (chainId === 31337 && vrfCoordinatorV2_5Mock !== undefined) {
-        await vrfCoordinatorV2_5Mock.contract.addConsumer(subscriptionId, mythNftAddress)
+        const transactionResponse = await vrfCoordinatorV2_5Mock.contract.addConsumer(
+            subscriptionId,
+            mythNftAddress
+        )
+        await transactionResponse.wait(1)
     }
 
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
         await verify(mythNftAddress, args)
     }
+
+    return { contract: mythNft.contract }
 }
 
 deployMythNft({}).catch((error) => console.log(error))
