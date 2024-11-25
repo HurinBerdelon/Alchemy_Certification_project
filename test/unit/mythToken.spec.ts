@@ -12,6 +12,7 @@ describe("MythToken Contract", () => {
     let mythToken: Contract
     let fundUser: (user?: HardhatEthersSigner, amount?: number) => Promise<{ userBalance: number }>
     const AMOUNT = 500
+    const mintFee = AMOUNT / 2
 
     beforeEach(async () => {
         const accounts = await ethers.getSigners()
@@ -64,7 +65,6 @@ describe("MythToken Contract", () => {
 
     describe("handleMintNft", () => {
         it("should be able to spend tokens from user and assign to the contract when minting a NFT", async () => {
-            const mintFee = AMOUNT / 2
             await fundUser()
 
             const mythTokenMinter = mythToken.connect(user) as MythToken
@@ -81,8 +81,7 @@ describe("MythToken Contract", () => {
             expect(Number(balanceOfUser)).equals(AMOUNT - mintFee)
         })
 
-        it("should not be able to spend tokens to mint an NFT if user has not enough balance", async () => {
-            const mintFee = AMOUNT / 2
+        it("should not be able to spend tokens to mint a NFT if user has not enough balance", async () => {
             const mythTokenMinter = mythToken.connect(user) as MythToken
             mythTokenMinter.approve(externalContract, mintFee)
 
@@ -90,7 +89,7 @@ describe("MythToken Contract", () => {
 
             await expect(
                 mythTokenExternal.handleMintNFT(user, mintFee)
-            ).to.be.revertedWithCustomError(mythTokenExternal, "MythToken__NotEnoughToken")
+            ).to.be.revertedWithCustomError(mythTokenExternal, "MythToken__NotEnoughBalance")
         })
     })
 
@@ -136,7 +135,7 @@ describe("MythToken Contract", () => {
 
             await expect(
                 mythTokenExternal.handleBuy(user, sellerUser, PRICE)
-            ).to.be.revertedWithCustomError(mythTokenExternal, "MythToken__NotEnoughToken")
+            ).to.be.revertedWithCustomError(mythTokenExternal, "MythToken__NotEnoughBalance")
         })
     })
 
