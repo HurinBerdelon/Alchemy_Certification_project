@@ -29,7 +29,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     // NFT variable
     uint256 public s_tokenCounter;
     uint256 internal constant MAX_CHANCE_VALUE = 100;
-    uint256 internal constant MAX_NUMBER_OF_COLLECTION = 34;
+    uint256 internal constant MAX_NUMBER_OF_COLLECTION = 2;
     string[] internal s_tokenUris;
     uint256 internal immutable i_mintFee;
 

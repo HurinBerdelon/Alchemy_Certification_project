@@ -1,17 +1,17 @@
 import { buildModule } from "@nomicfoundation/ignition-core"
-import { mythTokenAddress, networkConfig } from "../../helper-hardhat-config"
+import { networkConfig } from "../../helper-hardhat-config"
 import { network } from "hardhat"
 
 const MythNftModule = buildModule("MythNftModule", (module) => {
-    const deployer = module.getAccount(0)
     const subscriptionId = module.getParameter("subscriptionId")
     const vrfClientAddress = module.getParameter("vrfClientAddress")
+    const mythTokenAddress = module.getParameter("mythTokenAddress")
 
     const chainId = network.config.chainId ?? 31337
 
     const gaslane = networkConfig[chainId].gaslane
     const callbackGasLimit = networkConfig[chainId].callbackGasLimit
-    const tokenUris = ""
+    const tokenUris = ["", ""]
     const mintFee = networkConfig[chainId].mintFee
 
     const args = [
@@ -24,7 +24,7 @@ const MythNftModule = buildModule("MythNftModule", (module) => {
         mythTokenAddress,
     ]
 
-    const contract = module.contract("MythNft", args, { from: deployer })
+    const contract = module.contract("MythNft", args)
 
     return { contract }
 })

@@ -5,20 +5,21 @@ import MythNftModule from "../ignition/modules/MythNft"
 import { Contract } from "ethers"
 import verify from "../utils/verify"
 
-const BASE_FEE = ethers.parseEther("0.25")
-const GAS_PRICE_LINK = 1e9
 const FUND_AMOUNT = ethers.parseEther("1000")
 
-const deployMocks = async () => {
-    const accounts = await ethers.getSigners()
-    const deployer = accounts[0]
+interface DeployMythNftParams {
+    tokenUris?: string[]
+    _mythTokenAddress?: string
+}
 
+export const deployMythNft = async ({
+    tokenUris = new Array(34),
+    _mythTokenAddress = mythTokenAddress,
+}: DeployMythNftParams) => {
     const chainId = network.config.chainId ?? 31337
 
-    const vrfClientAddress = ""
     const gaslane = networkConfig[chainId].gaslane
     const callbackGasLimit = networkConfig[chainId].callbackGasLimit
-    const tokenUris = ""
     const mintFee = networkConfig[chainId].mintFee
 
     let vrfCoordinatorV2_5Address: string
@@ -29,14 +30,17 @@ const deployMocks = async () => {
         vrfCoordinatorV2_5Mock = await ignition.deploy(VRFCoordinatorV2_5MockModule)
         vrfCoordinatorV2_5Address = await vrfCoordinatorV2_5Mock.contract.getAddress()
         const transactionResponse = await vrfCoordinatorV2_5Mock.contract.createSubscription()
-        const transactionReceipt = await transactionResponse.wait()
-        subscriptionId = await transactionReceipt.events[0].args.subId
+        const transactionReceipt = await transactionResponse.wait(1)
+
+        subscriptionId = transactionReceipt.logs[0].args[0]
 
         await vrfCoordinatorV2_5Mock.contract.fundSubscription(subscriptionId, FUND_AMOUNT)
     } else {
         vrfCoordinatorV2_5Address = networkConfig[chainId].vrfCoordinatorV2_5Address as string
         subscriptionId = networkConfig[chainId].subscriptionId as string
     }
+
+    const vrfClientAddress = vrfCoordinatorV2_5Address
 
     const args = [
         vrfClientAddress,
@@ -45,13 +49,15 @@ const deployMocks = async () => {
         callbackGasLimit,
         tokenUris,
         mintFee,
-        mythTokenAddress,
+        _mythTokenAddress,
     ]
+
     const mythNft = await ignition.deploy(MythNftModule, {
         parameters: {
             MythNftModule: {
                 subscriptionId,
                 vrfClientAddress: vrfCoordinatorV2_5Address,
+                mythTokenAddress: _mythTokenAddress,
             },
         },
     })
@@ -66,3 +72,5 @@ const deployMocks = async () => {
         await verify(mythNftAddress, args)
     }
 }
+
+deployMythNft({}).catch((error) => console.log(error))
