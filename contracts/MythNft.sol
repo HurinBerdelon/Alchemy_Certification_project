@@ -67,9 +67,6 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     function withDraw() public {}
 
     function requestNft(uint256 price) public returns (uint256 requestId) {
-        // call token contract to validate if requester has enough tokens
-        // else revert
-
         bool success = IMythToken(i_mythTokenAddress).handleMintNFT(msg.sender, price);
 
         if (!success) {

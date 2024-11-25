@@ -6,7 +6,8 @@ import {IMythToken} from "./interfaces/IMythToken.sol";
 
 error MythToken__NoProceeds();
 error MythToken__WithdrawFailed();
-error MythToken__NotEnoughToken();
+error MythToken__NotEnoughBalance();
+error MythToken__NotEnoughTokenSent();
 error MythToken__TransferFailed();
 error MythToken__NotApprovedToTransfer();
 
@@ -36,7 +37,7 @@ contract MythToken is IMythToken, ERC20 {
         uint256 balance = balanceOf(minter);
 
         if (balance < value) {
-            revert MythToken__NotEnoughToken();
+            revert MythToken__NotEnoughBalance();
         }
 
         bool success = transferFrom(minter, address(this), value);
@@ -49,7 +50,7 @@ contract MythToken is IMythToken, ERC20 {
         uint256 balance = balanceOf(buyer);
 
         if (balance < value) {
-            revert MythToken__NotEnoughToken();
+            revert MythToken__NotEnoughBalance();
         }
 
         s_proceeds[seller] += value;
