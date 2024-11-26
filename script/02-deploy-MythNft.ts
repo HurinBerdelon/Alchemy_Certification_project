@@ -94,7 +94,7 @@ export const deployMythNft = async ({
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
     }
 
-    return mythNft
+    return { mythNft, vrfCoordinatorV2_5Mock }
 }
 
 deployMythNft({ log: true }).catch((error) => console.log(error))

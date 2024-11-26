@@ -2,7 +2,6 @@ import { ethers } from "hardhat"
 import { expect } from "chai"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
 import { ContractTransactionResponse } from "ethers"
-
 import { MythToken } from "../../typechain-types"
 import { deployMythToken } from "../../script/01-deploy-MythToken"
 
@@ -69,10 +68,10 @@ describe("MythToken Contract", () => {
         it("should be able to spend tokens from user and assign to the contract when minting a NFT", async () => {
             await fundUser()
 
-            const mythTokenMinter = mythToken.connect(user) as MythToken
+            const mythTokenMinter = mythToken.connect(user)
             mythTokenMinter.approve(externalContract, mintFee)
 
-            const mythTokenExternal = mythToken.connect(externalContract) as MythToken
+            const mythTokenExternal = mythToken.connect(externalContract)
             await mythTokenExternal.handleMintNFT(user, mintFee)
 
             const totalSupply = await mythToken.totalSupply()
@@ -84,10 +83,10 @@ describe("MythToken Contract", () => {
         })
 
         it("should not be able to spend tokens to mint a NFT if user has not enough balance", async () => {
-            const mythTokenMinter = mythToken.connect(user) as MythToken
+            const mythTokenMinter = mythToken.connect(user)
             mythTokenMinter.approve(externalContract, mintFee)
 
-            const mythTokenExternal = mythToken.connect(externalContract) as MythToken
+            const mythTokenExternal = mythToken.connect(externalContract)
 
             await expect(
                 mythTokenExternal.handleMintNFT(user, mintFee)
@@ -100,10 +99,10 @@ describe("MythToken Contract", () => {
             const PRICE = AMOUNT / 2
             const { userBalance: buyerBalanceBeforePurchase } = await fundUser(user)
 
-            const mythTokenBuyer = mythToken.connect(user) as MythToken
+            const mythTokenBuyer = mythToken.connect(user)
             mythTokenBuyer.approve(externalContract, PRICE)
 
-            const mythTokenExternal = mythToken.connect(externalContract) as MythToken
+            const mythTokenExternal = mythToken.connect(externalContract)
             await mythTokenExternal.handleBuy(user, sellerUser, PRICE)
 
             const buyerBalanceAfterPurchase = await mythToken.balanceOf(user)
@@ -115,13 +114,13 @@ describe("MythToken Contract", () => {
             const PRICE = AMOUNT / 2
             await fundUser(user)
 
-            const mythTokenBuyer = mythToken.connect(user) as MythToken
+            const mythTokenBuyer = mythToken.connect(user)
             mythTokenBuyer.approve(externalContract, PRICE)
 
-            const mythTokenExternal = mythToken.connect(externalContract) as MythToken
+            const mythTokenExternal = mythToken.connect(externalContract)
             await mythTokenExternal.handleBuy(user, sellerUser, PRICE)
 
-            const mythTokenSeller = mythToken.connect(sellerUser) as MythToken
+            const mythTokenSeller = mythToken.connect(sellerUser)
             const sellerProceeds = await mythTokenSeller.getProceeds()
 
             expect(Number(sellerProceeds)).equals(PRICE)
@@ -130,10 +129,10 @@ describe("MythToken Contract", () => {
         it("should not buy item if buyer does not have enough funds", async () => {
             const PRICE = AMOUNT / 2
 
-            const mythTokenBuyer = mythToken.connect(user) as MythToken
+            const mythTokenBuyer = mythToken.connect(user)
             mythTokenBuyer.approve(externalContract, PRICE)
 
-            const mythTokenExternal = mythToken.connect(externalContract) as MythToken
+            const mythTokenExternal = mythToken.connect(externalContract)
 
             await expect(
                 mythTokenExternal.handleBuy(user, sellerUser, PRICE)
@@ -146,13 +145,13 @@ describe("MythToken Contract", () => {
             const PRICE = AMOUNT / 2
             await fundUser(user)
 
-            const mythTokenBuyer = mythToken.connect(user) as MythToken
+            const mythTokenBuyer = mythToken.connect(user)
             mythTokenBuyer.approve(externalContract, PRICE)
 
-            const mythTokenExternal = mythToken.connect(externalContract) as MythToken
+            const mythTokenExternal = mythToken.connect(externalContract)
             await mythTokenExternal.handleBuy(user, sellerUser, PRICE)
 
-            const mythTokenSeller = mythToken.connect(sellerUser) as MythToken
+            const mythTokenSeller = mythToken.connect(sellerUser)
             await mythTokenSeller.withdrawProceeds()
             const sellerBalance = await mythTokenSeller.balanceOf(sellerUser)
 
@@ -160,7 +159,7 @@ describe("MythToken Contract", () => {
         })
 
         it("should not allow seller to withdraw zero proceeds", async () => {
-            const mythTokenSeller = mythToken.connect(sellerUser) as MythToken
+            const mythTokenSeller = mythToken.connect(sellerUser)
 
             await expect(mythTokenSeller.withdrawProceeds()).to.be.revertedWithCustomError(
                 mythTokenSeller,

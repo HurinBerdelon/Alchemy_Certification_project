@@ -74,11 +74,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
             revert MythNft__NotEnoughTokensPaid();
         }
 
-        bool success = IMythToken(i_mythTokenAddress).handleMintNFT(msg.sender, price);
-
-        if (!success) {
-            revert MythNft__NotEnoughBalance();
-        }
+        IMythToken(i_mythTokenAddress).handleMintNFT(msg.sender, price);
 
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -97,6 +93,8 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         s_requestIdToSender[requestId] = msg.sender;
 
         emit NftRequested(requestId, msg.sender);
+
+        return requestId;
     }
 
     function fulfillRandomWords(
@@ -107,7 +105,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         uint256 newTokenId = s_tokenCounter;
 
         uint256 moddedRng = randomWords[0] % i_maxNumberOfCollection;
-        uint256 rarityRng = randomWords[1] % MAX_CHANCE_VALUE;
+        uint256 rarityRng = (randomWords[0] / moddedRng) % MAX_CHANCE_VALUE;
 
         Rarity rarity = getRarityFromRarityRng(rarityRng);
         s_tokenCounter++;
