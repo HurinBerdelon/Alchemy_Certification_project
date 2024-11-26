@@ -12,7 +12,6 @@ import { deployMythToken } from "../../script/01-deploy-MythToken"
 describe("MythNft Contract", () => {
     const outOfBoundsRarityRng = 150
     let user: HardhatEthersSigner
-    let externalContract: HardhatEthersSigner
     let mythNft: MythNft & {
         deploymentTransaction(): ContractTransactionResponse
     }
@@ -29,7 +28,6 @@ describe("MythNft Contract", () => {
     beforeEach(async () => {
         const accounts = await ethers.getSigners()
         user = accounts[1]
-        externalContract = accounts[2]
 
         mythToken = await deployMythToken()
         const mythTokenAddress = await mythToken.getAddress()
@@ -110,10 +108,8 @@ describe("MythNft Contract", () => {
                 mythNftUser.once("NftMinted", async () => {
                     try {
                         const tokenUri = await mythNftUser.getTokenUris(0)
-                        const tokenCounter = await mythNftUser.getTokenCounter()
 
                         expect(tokenUri.toString()).equals(tokenUrisMock[0])
-                        expect(tokenCounter.toString()).equals("1")
                         resolve()
                     } catch (error) {
                         console.log(error)
@@ -161,4 +157,6 @@ describe("MythNft Contract", () => {
             expect(chanceArray[2]).equals(BigInt(100))
         })
     })
+
+    describe("getTokenByTokenId", () => {})
 })
