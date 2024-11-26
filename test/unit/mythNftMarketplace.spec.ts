@@ -2,7 +2,7 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
 import { ContractTransactionResponse } from "ethers"
 import { ethers, network } from "hardhat"
 
-import { BasicNft, MythNft, MythNftMarketplace, MythToken } from "../../typechain-types"
+import { BasicNft, MythNftMarketplace, MythToken } from "../../typechain-types"
 import { deployMythToken } from "../../script/01-deploy-MythToken"
 import { deployMythNftMarketplace } from "../../script/03-deploy-MythNftMarketplace"
 import { networkConfig } from "../../helper-hardhat-config"
@@ -74,26 +74,26 @@ describe("MythNftMarketplace Contract", () => {
             const basicNftUser = basicNft.connect(sellerUser)
             const basicNftAddress = await basicNftUser.getAddress()
 
-            const mythNftMarketplaceUser = mythNftMarketplace.connect(sellerUser)
-            const mythNftMarketplaceUserAddress = await mythNftMarketplaceUser.getAddress()
-            await basicNftUser.approve(mythNftMarketplaceUserAddress, tokenId)
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
 
-            await expect(mythNftMarketplaceUser.listItem(basicNftAddress, tokenId, AMOUNT)).to.emit(
-                mythNftMarketplaceUser,
-                "ItemListed"
-            )
+            await expect(
+                mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+            ).to.emit(mythNftMarketplaceSellerUser, "ItemListed")
         })
 
         it("should revert if price is equal or below zero", async () => {
             const tokenId = await mintNftForUser()
             const basicNftAddress = await basicNft.getAddress()
 
-            const mythNftMarketplaceUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
 
             await expect(
-                mythNftMarketplaceUser.listItem(basicNftAddress, tokenId, 0)
+                mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, 0)
             ).to.be.revertedWithCustomError(
-                mythNftMarketplaceUser,
+                mythNftMarketplaceSellerUser,
                 "MythNftMarketplace__PriceMustBeAboveZero"
             )
         })
@@ -103,12 +103,12 @@ describe("MythNftMarketplace Contract", () => {
             const basicNftUser = basicNft.connect(sellerUser)
             const basicNftAddress = await basicNftUser.getAddress()
 
-            const mythNftMarketplaceUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
 
             await expect(
-                mythNftMarketplaceUser.listItem(basicNftAddress, tokenId, AMOUNT)
+                mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
             ).to.be.revertedWithCustomError(
-                mythNftMarketplaceUser,
+                mythNftMarketplaceSellerUser,
                 "MythNftMarketplace__NotApprovedForMarketplace"
             )
         })
@@ -118,16 +118,17 @@ describe("MythNftMarketplace Contract", () => {
             const basicNftUser = basicNft.connect(sellerUser)
             const basicNftAddress = await basicNftUser.getAddress()
 
-            const mythNftMarketplaceUser = mythNftMarketplace.connect(sellerUser)
-            const mythNftMarketplaceUserAddress = await mythNftMarketplaceUser.getAddress()
-            await basicNftUser.approve(mythNftMarketplaceUserAddress, tokenId)
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
 
-            await mythNftMarketplaceUser.listItem(basicNftAddress, tokenId, AMOUNT)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
 
             await expect(
-                mythNftMarketplaceUser.listItem(basicNftAddress, tokenId, AMOUNT)
+                mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
             ).to.be.revertedWithCustomError(
-                mythNftMarketplaceUser,
+                mythNftMarketplaceSellerUser,
                 "MythNftMarketplace__AlreadyListed"
             )
         })
@@ -138,8 +139,8 @@ describe("MythNftMarketplace Contract", () => {
             const basicNftAddress = await basicNftUser.getAddress()
 
             const mythNftMarketplaceBuyer = mythNftMarketplace.connect(buyerUser)
-            const mythNftMarketplaceUserAddress = await mythNftMarketplaceBuyer.getAddress()
-            await basicNftUser.approve(mythNftMarketplaceUserAddress, tokenId)
+            const mythNftMarketplaceSellerUserAddress = await mythNftMarketplaceBuyer.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
 
             await expect(
                 mythNftMarketplaceBuyer.listItem(basicNftAddress, tokenId, AMOUNT)
@@ -148,6 +149,187 @@ describe("MythNftMarketplace Contract", () => {
     })
 
     describe("buyItem", () => {
-        it("should emit an event when a NFT is bought", async () => {})
+        it("should emit an event when a NFT is bought", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            await fundUser(buyerUser, AMOUNT)
+            const mythTokenBuyer = mythToken.connect(buyerUser)
+            await mythTokenBuyer.approve(mythNftMarketplaceSellerUserAddress, AMOUNT)
+
+            const mythNftMarketplaceBuyer = mythNftMarketplace.connect(buyerUser)
+
+            await expect(mythNftMarketplaceBuyer.buyItem(basicNftAddress, tokenId)).to.emit(
+                mythNftMarketplaceBuyer,
+                "ItemBought"
+            )
+        })
+
+        it("should revert if NFT is not listed", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            await fundUser(buyerUser, AMOUNT)
+            const mythNftMarketplaceBuyer = mythNftMarketplace.connect(buyerUser)
+
+            await expect(
+                mythNftMarketplaceBuyer.buyItem(basicNftAddress, tokenId)
+            ).to.be.revertedWithCustomError(
+                mythNftMarketplaceBuyer,
+                "MythNftMarketplace__NotListed"
+            )
+        })
+    })
+
+    describe("cancelListing", () => {
+        it("should be able for the owner to cancel listing", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            expect(
+                await mythNftMarketplaceSellerUser.cancelListing(basicNftAddress, tokenId)
+            ).to.emit(mythNftMarketplaceSellerUser, "ItemCanceled")
+        })
+
+        it("should revert if NFT is not listed", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+
+            await expect(
+                mythNftMarketplaceSellerUser.cancelListing(basicNftAddress, tokenId)
+            ).to.be.revertedWithCustomError(
+                mythNftMarketplaceSellerUser,
+                "MythNftMarketplace__NotListed"
+            )
+        })
+
+        it("should revert if not owner user trying to cancel listing", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            const mythNftMarketplaceBuyer = mythNftMarketplace.connect(buyerUser)
+
+            await expect(
+                mythNftMarketplaceBuyer.cancelListing(basicNftAddress, tokenId)
+            ).to.be.revertedWithCustomError(mythNftMarketplaceBuyer, "MythNftMarketplace__NotOwner")
+        })
+    })
+
+    describe("updateListing", () => {
+        it("should be able for the owner to update listing", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            expect(
+                mythNftMarketplaceSellerUser.updateListing(
+                    basicNftAddress,
+                    tokenId,
+                    Number(AMOUNT) / 2
+                )
+            ).to.emit(mythNftMarketplaceSellerUser, "ItemListed")
+        })
+
+        it("should not update listing if new price is equal or lower than zero", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            expect(
+                mythNftMarketplaceSellerUser.updateListing(basicNftAddress, tokenId, 0)
+            ).to.be.revertedWithCustomError(
+                mythNftMarketplaceSellerUser,
+                "MythNftMarketplace__PriceMustBeAboveZero"
+            )
+        })
+
+        it("should not be able to update a NFT if it is not listed", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+
+            await expect(
+                mythNftMarketplaceSellerUser.updateListing(basicNftAddress, tokenId, AMOUNT)
+            ).to.be.revertedWithCustomError(
+                mythNftMarketplaceSellerUser,
+                "MythNftMarketplace__NotListed"
+            )
+        })
+
+        it("should not be able for not owner user to update listing", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            const mythNftMarketplaceBuyer = mythNftMarketplace.connect(buyerUser)
+
+            await expect(
+                mythNftMarketplaceBuyer.updateListing(basicNftAddress, tokenId, AMOUNT)
+            ).to.be.revertedWithCustomError(mythNftMarketplaceBuyer, "MythNftMarketplace__NotOwner")
+        })
+    })
+
+    describe("getListingByTokenId", () => {
+        it("should return listing by tokenId", async () => {
+            const tokenId = await mintNftForUser()
+            const basicNftUser = basicNft.connect(sellerUser)
+            const basicNftAddress = await basicNftUser.getAddress()
+
+            const mythNftMarketplaceSellerUser = mythNftMarketplace.connect(sellerUser)
+            const mythNftMarketplaceSellerUserAddress =
+                await mythNftMarketplaceSellerUser.getAddress()
+            await basicNftUser.approve(mythNftMarketplaceSellerUserAddress, tokenId)
+            await mythNftMarketplaceSellerUser.listItem(basicNftAddress, tokenId, AMOUNT)
+
+            const listing = await mythNftMarketplace.getListingByTokenId(basicNftAddress, tokenId)
+
+            expect(listing[0].toString()).equals(AMOUNT)
+            expect(listing[1]).equals(sellerUser.address)
+        })
     })
 })

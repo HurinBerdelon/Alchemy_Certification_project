@@ -5,6 +5,8 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
+import "hardhat/console.sol";
+
 error MythNftMarketplace__PriceMustBeAboveZero();
 error MythNftMarketplace__NotApprovedForMarketplace();
 error MythNftMarketplace__AlreadyListed(address nftAddress, uint256 tokenId);
@@ -101,15 +103,7 @@ contract MythNftMarketplace is ReentrancyGuard {
         Listing memory listedItem = s_listings[nftAddress][tokenId];
 
         // get buyer balance in Token contract, remove this amount from his balance and add to proceed mapping in token contract
-        bool success = IMythToken(i_mythTokenAddress).handleBuy(
-            msg.sender,
-            listedItem.seller,
-            listedItem.price
-        );
-
-        if (!success) {
-            revert MythNftMarketplace__PurchaseFailed(nftAddress, tokenId, listedItem.price);
-        }
+        IMythToken(i_mythTokenAddress).handleBuy(msg.sender, listedItem.seller, listedItem.price);
 
         delete (s_listings[nftAddress][tokenId]);
 

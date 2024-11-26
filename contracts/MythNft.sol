@@ -148,7 +148,9 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         return s_tokenCounter;
     }
 
-    function getTokenByTokenId(uint256 tokenId) public view returns (TokenStructure memory) {}
+    function getTokenByTokenId(uint256 tokenId) public view returns (TokenStructure memory) {
+        return s_mythNftToken[tokenId];
+    }
 
     function getMythToken() external view returns (address) {
         return i_mythTokenAddress;

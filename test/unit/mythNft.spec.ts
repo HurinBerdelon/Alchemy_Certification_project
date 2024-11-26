@@ -108,8 +108,13 @@ describe("MythNft Contract", () => {
                 mythNftUser.once("NftMinted", async () => {
                     try {
                         const tokenUri = await mythNftUser.getTokenUris(0)
+                        const tokenCounter = await mythNftUser.getTokenCounter()
+                        const tokenStructure = await mythNftUser.getTokenByTokenId(1)
 
                         expect(tokenUri.toString()).equals(tokenUrisMock[0])
+                        expect(tokenCounter.toString()).equals("2")
+                        expect(tokenStructure[0].toString()).equals("0")
+                        expect(tokenStructure[1]).includes("mockedTokenUri")
                         resolve()
                     } catch (error) {
                         console.log(error)
@@ -157,6 +162,4 @@ describe("MythNft Contract", () => {
             expect(chanceArray[2]).equals(BigInt(100))
         })
     })
-
-    describe("getTokenByTokenId", () => {})
 })
