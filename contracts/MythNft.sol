@@ -7,8 +7,6 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFCo
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
-import "hardhat/console.sol";
-
 error MythNft__RangeOutOfBounds();
 error MythNft__NotEnoughTokensPaid();
 error MythNft__TransferFailed();
@@ -125,10 +123,10 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         uint256[3] memory chanceArray = getChanceArray();
 
         for (uint256 i = 0; i < chanceArray.length; i++) {
-            if (rarityRng >= cumulativeSum && rarityRng < cumulativeSum + chanceArray[i]) {
+            if (rarityRng >= cumulativeSum && rarityRng < chanceArray[i]) {
                 return Rarity(i);
             }
-            cumulativeSum += chanceArray[i];
+            cumulativeSum = chanceArray[i];
         }
 
         revert MythNft__RangeOutOfBounds();

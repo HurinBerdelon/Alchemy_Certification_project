@@ -10,6 +10,7 @@ import tokenUrisMock from "../mock/tokenUrisMock.json"
 import { deployMythToken } from "../../script/01-deploy-MythToken"
 
 describe("MythNft Contract", () => {
+    const outOfBoundsRarityRng = 150
     let user: HardhatEthersSigner
     let externalContract: HardhatEthersSigner
     let mythNft: MythNft & {
@@ -134,6 +135,20 @@ describe("MythNft Contract", () => {
                     reject(error)
                 }
             })
+        })
+    })
+
+    describe("getRarityFromRarityRng", () => {
+        it("should return a rarity from a rarityRng", async () => {
+            const rarity = await mythNft.getRarityFromRarityRng(95)
+
+            expect(rarity).equals(BigInt(1))
+        })
+
+        it("should revert if rarityRng is out of bounds (it means, over 100)", async () => {
+            await expect(
+                mythNft.getRarityFromRarityRng(outOfBoundsRarityRng)
+            ).to.be.revertedWithCustomError(mythNft, "MythNft__RangeOutOfBounds")
         })
     })
 
