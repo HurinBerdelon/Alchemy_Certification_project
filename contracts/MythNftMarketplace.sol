@@ -5,16 +5,14 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
+import "hardhat/console.sol";
+
 error MythNftMarketplace__PriceMustBeAboveZero();
 error MythNftMarketplace__NotApprovedForMarketplace();
-error MythNftMarketplace__AlreatyListed(address nftAddress, uint256 tokenId);
+error MythNftMarketplace__AlreadyListed(address nftAddress, uint256 tokenId);
 error MythNftMarketplace__NotListed(address nftAddress, uint256 tokenId);
 error MythNftMarketplace__NotOwner();
-error MythNftMarketplace__PurchaseFailed(
-    address nftAddress,
-    uint256 tokenId,
-    uint256 price
-);
+error MythNftMarketplace__PurchaseFailed(address nftAddress, uint256 tokenId, uint256 price);
 error MythNftMarketplace__TransferFailed();
 
 contract MythNftMarketplace is ReentrancyGuard {
@@ -37,11 +35,7 @@ contract MythNftMarketplace is ReentrancyGuard {
         uint256 price
     );
 
-    event ItemCanceled(
-        address indexed seller,
-        address indexed nftAddress,
-        uint256 indexed tokenId
-    );
+    event ItemCanceled(address indexed seller, address indexed nftAddress, uint256 indexed tokenId);
 
     address internal immutable i_mythTokenAddress;
 
@@ -54,7 +48,7 @@ contract MythNftMarketplace is ReentrancyGuard {
     ) {
         Listing memory listing = s_listings[nftAddress][tokenId];
         if (listing.price > 0) {
-            revert MythNftMarketplace__AlreatyListed(nftAddress, tokenId);
+            revert MythNftMarketplace__AlreadyListed(nftAddress, tokenId);
         }
         _;
     }
@@ -88,11 +82,7 @@ contract MythNftMarketplace is ReentrancyGuard {
         address nftAddress,
         uint256 tokenId,
         uint256 price
-    )
-        external
-        notListed(nftAddress, tokenId, msg.sender)
-        isOwner(nftAddress, tokenId, msg.sender)
-    {
+    ) external notListed(nftAddress, tokenId, msg.sender) isOwner(nftAddress, tokenId, msg.sender) {
         if (price <= 0) {
             revert MythNftMarketplace__PriceMustBeAboveZero();
         }
@@ -113,27 +103,11 @@ contract MythNftMarketplace is ReentrancyGuard {
         Listing memory listedItem = s_listings[nftAddress][tokenId];
 
         // get buyer balance in Token contract, remove this amount from his balance and add to proceed mapping in token contract
-        bool success = IMythToken(i_mythTokenAddress).handleBuy(
-            msg.sender,
-            listedItem.seller,
-            listedItem.price
-        );
-
-        if (!success) {
-            revert MythNftMarketplace__PurchaseFailed(
-                nftAddress,
-                tokenId,
-                listedItem.price
-            );
-        }
+        IMythToken(i_mythTokenAddress).handleBuy(msg.sender, listedItem.seller, listedItem.price);
 
         delete (s_listings[nftAddress][tokenId]);
 
-        IERC721(nftAddress).safeTransferFrom(
-            listedItem.seller,
-            msg.sender,
-            tokenId
-        );
+        IERC721(nftAddress).safeTransferFrom(listedItem.seller, msg.sender, tokenId);
 
         emit ItemBought(msg.sender, nftAddress, tokenId, listedItem.price);
     }
@@ -141,11 +115,7 @@ contract MythNftMarketplace is ReentrancyGuard {
     function cancelListing(
         address nftAddress,
         uint256 tokenId
-    )
-        external
-        isOwner(nftAddress, tokenId, msg.sender)
-        isListed(nftAddress, tokenId)
-    {
+    ) external isOwner(nftAddress, tokenId, msg.sender) isListed(nftAddress, tokenId) {
         delete (s_listings[nftAddress][tokenId]);
         emit ItemCanceled(msg.sender, nftAddress, tokenId);
     }
@@ -154,11 +124,7 @@ contract MythNftMarketplace is ReentrancyGuard {
         address nftAddress,
         uint256 tokenId,
         uint256 newPrice
-    )
-        external
-        isOwner(nftAddress, tokenId, msg.sender)
-        isListed(nftAddress, tokenId)
-    {
+    ) external isOwner(nftAddress, tokenId, msg.sender) isListed(nftAddress, tokenId) {
         if (newPrice <= 0) {
             revert MythNftMarketplace__PriceMustBeAboveZero();
         }

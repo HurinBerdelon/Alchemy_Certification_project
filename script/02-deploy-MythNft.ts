@@ -37,7 +37,8 @@ export const deployMythNft = async ({
         | undefined
 
     if (chainId === 31337) {
-        vrfCoordinatorV2_5Mock = await deployMock()
+        const contracts = await deployMock()
+        vrfCoordinatorV2_5Mock = contracts.vrfCoordinatorV2_5Mock
         vrfCoordinatorV2_5Address = await vrfCoordinatorV2_5Mock.getAddress()
         const transactionResponse = await vrfCoordinatorV2_5Mock.createSubscription()
         const transactionReceipt = (await transactionResponse.wait(1)) as ContractTransactionReceipt
@@ -94,7 +95,7 @@ export const deployMythNft = async ({
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
     }
 
-    return mythNft
+    return { mythNft, vrfCoordinatorV2_5Mock }
 }
 
 deployMythNft({ log: true }).catch((error) => console.log(error))
