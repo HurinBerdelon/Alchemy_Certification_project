@@ -10,13 +10,15 @@ contract BasicNft is ERC721 {
     event NftMinted(uint256 indexed tokenId, address indexed minter);
 
     constructor() ERC721("Basic NFT", "BNT") {
-        s_tokenCounter = 0;
+        s_tokenCounter = 1;
     }
 
-    function mintNft() public {
-        _safeMint(msg.sender, s_tokenCounter);
-        emit NftMinted(s_tokenCounter, msg.sender);
+    function mintNft() public returns (uint256) {
+        uint256 newTokenId = s_tokenCounter;
+        _safeMint(msg.sender, newTokenId);
+        emit NftMinted(newTokenId, msg.sender);
         s_tokenCounter++;
+        return newTokenId;
     }
 
     function tokenUri() public pure returns (string memory) {

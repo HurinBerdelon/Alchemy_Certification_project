@@ -2,7 +2,6 @@
 pragma solidity ^0.8.27;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
@@ -39,7 +38,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
 
     // Events
     event NftRequested(uint256 indexed requestId, address requester);
-    event NftMinted(Rarity rarity, address minter);
+    event NftMinted(uint256 indexed tokenId, Rarity indexed rarity, address indexed minter);
 
     // Type declarations
     enum Rarity {
@@ -65,6 +64,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         s_tokenUris = tokenUris;
         i_mintFee = mintFee;
         i_mythTokenAddress = mythTokenAddress;
+        s_tokenCounter = 1;
     }
 
     function requestNft(uint256 price) public returns (uint256 requestId) {
@@ -115,7 +115,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
             tokenUri: s_tokenUris[moddedRng]
         });
 
-        emit NftMinted(rarity, nftOwner);
+        emit NftMinted(newTokenId, rarity, nftOwner);
     }
 
     function getRarityFromRarityRng(uint256 rarityRng) public pure returns (Rarity) {
