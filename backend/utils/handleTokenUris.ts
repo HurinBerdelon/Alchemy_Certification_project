@@ -5,16 +5,16 @@ import { storeImages, storeTokenUriMetadata } from "./uploadToPinata"
 
 export async function handleTokenUris() {
     const tokenUris = []
-    const { files, results: imageUploadResponses } = await storeImages(imagesLocation)
+    const imageUploadResponses = await storeImages(imagesLocation)
 
-    for (const imageResponseIndex in imageUploadResponses) {
-        const metadata = entities.find((entity) => entity.name === files[imageResponseIndex])!
+    for (const entityIndex in entities) {
+        const metadata = entities.find((entity) => entity.name === entities[entityIndex].name)!
         const tokenUriMetada: TokenUriMetadata = {
             name: metadata.name,
             description: metadata.description,
-            collectionNumber: metadata.collectionNumber,
+            collectionNumber: Number(entityIndex) + 1,
             origin: metadata.name,
-            imageUrl: `https://ipfs.io/ipfs/${imageUploadResponses[imageResponseIndex].IpfsHash}`,
+            imageUrl: `https://ipfs.io/ipfs/${imageUploadResponses[entityIndex].IpfsHash}`,
         }
 
         const metadataUploadResponse = await storeTokenUriMetadata(tokenUriMetada)
