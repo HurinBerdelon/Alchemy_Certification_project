@@ -118,7 +118,7 @@ describe("MythNft Contract", () => {
                         resolve()
                     } catch (error) {
                         console.log(error)
-                        reject(error)
+                        reject(error as Error)
                     }
                 })
 
@@ -133,7 +133,7 @@ describe("MythNft Contract", () => {
                     )
                 } catch (error) {
                     console.log(error)
-                    reject(error)
+                    reject(error as Error)
                 }
             })
         })

@@ -12,9 +12,19 @@ error MythToken__NotEnoughBalance();
 error MythToken__NotEnoughTokenSent();
 error MythToken__TransferFailed();
 error MythToken__NotApprovedToTransfer();
+error MythToken__CannotFundUser();
 
 contract MythToken is IMythToken, ERC20 {
+    struct LastFund {
+        uint256 sequentialDays;
+        uint256 timestamp;
+    }
+
+    event UserFunded(address indexed user, uint256 amount, uint256 timestamp);
+
     mapping(address => uint256) private s_proceeds;
+
+    mapping(address => LastFund) private s_lastFunds;
 
     constructor(
         string memory _tokenName,
@@ -29,9 +39,24 @@ contract MythToken is IMythToken, ERC20 {
     }
 
     // When minting token for user, burn some from the contract itself
+    // TODO: update function to fund msg.sender and perhaps the name of the function to fundMe
     function mintForUser(address to, uint256 value) external {
+        if (
+            s_lastFunds[to].timestamp > 0 &&
+            s_lastFunds[to].timestamp + (24 * 60 * 60) > block.timestamp
+        ) {
+            revert MythToken__CannotFundUser();
+        }
+
+        s_lastFunds[to] = LastFund({
+            sequentialDays: s_lastFunds[to].sequentialDays++,
+            timestamp: block.timestamp
+        });
+
         _burn(address(this), value);
         _mint(to, value);
+
+        emit UserFunded(to, value, block.timestamp);
     }
 
     // To be called by another contract (MythNft)
