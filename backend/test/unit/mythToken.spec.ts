@@ -2,6 +2,8 @@ import { ethers } from "hardhat"
 import { expect } from "chai"
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers"
 import { ContractTransactionResponse } from "ethers"
+import { time } from "@nomicfoundation/hardhat-network-helpers"
+
 import { MythToken } from "../../typechain-types"
 import { deployMythToken } from "../../script/01-deploy-MythToken"
 
@@ -52,6 +54,13 @@ describe("MythToken Contract", () => {
     })
 
     describe("mintForUser", () => {
+        it("should emit an event when minting some tokens for the user", async () => {
+            await expect(mythToken.mintForUser(user.address, AMOUNT)).to.emit(
+                mythToken,
+                "UserFunded"
+            )
+        })
+
         it("should transfer an amount to an user", async () => {
             await fundUser()
 
@@ -61,6 +70,29 @@ describe("MythToken Contract", () => {
 
             expect(Number(balanceOfContract)).equals(Number(totalSupply) - AMOUNT)
             expect(Number(balanceOfUser)).equals(AMOUNT)
+        })
+
+        it("should fund user again after 24 hours have passed", async () => {
+            await fundUser()
+            const balanceOfUser = await mythToken.balanceOf(user)
+
+            await time.increase(24 * 60 * 60) // 24 hours
+
+            await fundUser()
+
+            const balanceOfUserAfterSecondFund = await mythToken.balanceOf(user)
+
+            expect(Number(balanceOfUser)).equals(AMOUNT)
+            expect(Number(balanceOfUserAfterSecondFund)).equals(AMOUNT * 2)
+        })
+
+        it("should not fund user if there is less than 24*60*60 seconds (24 hours) from last fund", async () => {
+            await fundUser()
+
+            await expect(mythToken.mintForUser(user.address, AMOUNT)).to.be.revertedWithCustomError(
+                mythToken,
+                "MythToken__CannotFundUser"
+            )
         })
     })
 
