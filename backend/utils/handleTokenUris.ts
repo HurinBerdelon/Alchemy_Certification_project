@@ -4,7 +4,7 @@ import { entities } from "./entities"
 import { storeImages, storeTokenUriMetadata } from "./uploadToPinata"
 
 export async function handleTokenUris() {
-    const tokenUris = []
+    const tokenUris: string[] = []
     const imageUploadResponses = await storeImages(imagesLocation)
 
     for (const entityIndex in entities) {
@@ -20,7 +20,6 @@ export async function handleTokenUris() {
         const metadataUploadResponse = await storeTokenUriMetadata(tokenUriMetada)
 
         tokenUris.push(`https://ipfs.io/ipfs/${metadataUploadResponse?.IpfsHash}`)
-
-        return tokenUris
     }
+    return tokenUris
 }
