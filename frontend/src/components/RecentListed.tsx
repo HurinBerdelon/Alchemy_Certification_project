@@ -1,7 +1,7 @@
 import { Rarity } from "@/types/Rarity";
-import { Card } from "./Card";
+import { ListedCard } from "./ListedCard";
 
-const CARD = {
+export const CARD = {
     name: "Odin",
     description:
         "Odin is the Allfather, the chief of the Aesir gods, associated with war, wisdom, poetry, and death. He is known for sacrificing an eye to gain the knowledge of the runes.",
@@ -16,15 +16,15 @@ const CARD = {
 
 export function RecentListed() {
     return (
-        <ul className="flex flex-wrap justify-start gap-4">
+        <ul className="flex flex-wrap justify-start gap-8">
             <li>
-                <Card card={CARD} />
+                <ListedCard card={CARD} />
             </li>
             <li>
-                <Card card={CARD} />
+                <ListedCard card={CARD} />
             </li>
             <li>
-                <Card card={CARD} />
+                <ListedCard card={CARD} />
             </li>
         </ul>
     );
