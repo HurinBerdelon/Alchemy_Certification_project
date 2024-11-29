@@ -1,49 +1,42 @@
-import Image from "next/image";
-
-const CARD = {
-    name: "Odin",
-    description:
-        "Odin is the Allfather, the chief of the Aesir gods, associated with war, wisdom, poetry, and death. He is known for sacrificing an eye to gain the knowledge of the runes.",
-    origin: "norse",
-    collectionNumber: "01",
-    imageUrl:
-        "https://ipfs.io/ipfs/QmX7UXE8dSQeqyejWChS19ZzyC8sKGRxViu2tZERdoJws8",
-};
-
-const TOTAL_COLLECTION = 34;
-const SERIAL_NUMBER = "0000000001";
+import { RecentListed } from "@/components/RecentListed";
+import Link from "next/link";
 
 export default function Home() {
     return (
-        <div className="w-[315px] h-[440px] border-4 rounded-md m-auto mt-12">
-            <main className="flex flex-col items-center px-2 py-px rounded-md h-full ">
-                <h2 className="w-full text-left text-2xl font-semibold capitalize">
-                    {CARD.name}
-                </h2>
-                {/* <div className="border-2 object-cover w-full flex-1"> */}
-                <Image
-                    className="object-cover border-4 border-[#D4AF37] w-full flex-1"
-                    src={CARD.imageUrl}
-                    alt={CARD.name}
-                    width={315}
-                    height={38}
-                />
-                {/* </div> */}
-                <h3 className="capitalize font-medium text-lg">
-                    {CARD.origin}
-                </h3>
-                <p className="italic font-light text-sm">{CARD.description}</p>
-                <div className="w-full font-medium flex items-end justify-between">
-                    <span className="text-xs italic font-light">
-                        {SERIAL_NUMBER}
-                    </span>
-                    <div className="text-right">
-                        <span>{CARD.collectionNumber}</span>
-                        <span>{"/"}</span>
-                        <span>{TOTAL_COLLECTION}</span>
-                    </div>
+        <>
+            <section id="introduction" className="mb-4">
+                <h1 className="text-2xl font-bold mb-2">
+                    Welcome to Mythology Nft Collection
+                </h1>
+                <p>
+                    {`This app was develop as the final project for Alchemy
+                    Academy University Ethereum Bootcamp.
+                    It is a collection of NFTs, where each NFT is a card of a character of the norse, greek or egytian mythology.
+                    This app also has a marketplace where you can trade cards to fulfill your collection.`}
+                </p>
+                <Link href="/about" className="underline">
+                    Read more
+                </Link>
+            </section>
+            <section
+                id="disclaimer"
+                className="italic border-[1px] border-red-800 rounded-sm p-2 w-fit text-red-100 mb-4"
+            >
+                <p>{`This is a demo project deployed to a testnet and like so, user's use fake funds to interact with the project.`}</p>
+                <p>{`Make sure to never connect your wallet with real funds in this projects. Real funds sent to a testnet will not be recovered.`}</p>
+            </section>
+            <section id="recent-listed">
+                <h2 className="text-2xl font-semibold mb-2">Recent Listed</h2>
+                <RecentListed />
+                <div className="mt-4 flex w-full justify-center">
+                    <Link
+                        href="/marketplace"
+                        className="py-2 px-4 bg-white text-black rounded-md hover:opacity-90"
+                    >
+                        See all
+                    </Link>
                 </div>
-            </main>
-        </div>
+            </section>
+        </>
     );
 }

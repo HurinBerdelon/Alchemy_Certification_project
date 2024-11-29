@@ -31,6 +31,14 @@ export function SubHeader() {
             >
                 My Colletion
             </Link>
+            <Link
+                href="/about"
+                className={`${
+                    pathName === "/about" ? "underline" : ""
+                } hover:opacity-90`}
+            >
+                About
+            </Link>
         </nav>
     );
 }

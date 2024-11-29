@@ -33,7 +33,7 @@ export default function RootLayout({
             >
                 <Header />
                 <SubHeader />
-                {children}
+                <main className="p-4">{children}</main>
                 <Footer />
             </body>
         </html>
