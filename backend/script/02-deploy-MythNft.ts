@@ -5,7 +5,7 @@ import { VRFCoordinatorV2_5Mock } from "../typechain-types"
 import verify from "../utils/verify"
 import { developmentChains, mythTokenAddress, networkConfig } from "../helper-hardhat-config"
 import { deployMock } from "./00-deploy-mocks"
-import { handleTokenUris } from "../utils/handleTokenUris"
+import tokenUris from "../utils/tokenUris/tokenUris.json"
 
 const FUND_AMOUNT = ethers.parseEther("1000")
 
@@ -36,10 +36,6 @@ export const deployMythNft = async ({
               deploymentTransaction(): ContractTransactionResponse
           })
         | undefined
-
-    if (process.env.UPLOAD_TO_PINATA === "true") {
-        tokenUris = await handleTokenUris()
-    }
 
     if (chainId === 31337) {
         const contracts = await deployMock()
@@ -103,4 +99,4 @@ export const deployMythNft = async ({
     return { mythNft, vrfCoordinatorV2_5Mock }
 }
 
-deployMythNft({ log: true }).catch((error) => console.log(error))
+deployMythNft({ tokenUris, log: true }).catch((error) => console.log(error))

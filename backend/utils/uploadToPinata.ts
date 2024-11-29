@@ -10,15 +10,16 @@ const pinataApiSecret = process.env.PINATA_API_SECRET!
 const pinataClient = new PinataClient(pinataApiKey, pinataApiSecret)
 
 export async function storeImages(imagesFilePath: string) {
+    console.log("Running storeImages to Pinata...")
     const fullImagePath = path.resolve(imagesFilePath)
 
     const responses = []
 
     for (const entity of entities) {
-        const readableStreamForFile = createReadStream(`${fullImagePath}/${entity.name}`)
+        const readableStreamForFile = createReadStream(`${fullImagePath}/${entity.name}.png`)
         const options = {
             pinataMetadata: {
-                name: entity.name,
+                name: `${entity.name} image`,
             },
         }
 
@@ -33,6 +34,7 @@ export async function storeImages(imagesFilePath: string) {
 }
 
 export async function storeTokenUriMetadata(metadata: TokenUriMetadata) {
+    console.log(`Running storeMetadata (${metadata.name}) to Pinata...`)
     const options = {
         pinataMetadata: {
             name: metadata.name,

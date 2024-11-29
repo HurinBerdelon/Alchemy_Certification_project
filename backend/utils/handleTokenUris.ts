@@ -13,7 +13,7 @@ export async function handleTokenUris() {
             name: metadata.name,
             description: metadata.description,
             collectionNumber: Number(entityIndex) + 1,
-            origin: metadata.name,
+            origin: metadata.origin,
             imageUrl: `https://ipfs.io/ipfs/${imageUploadResponses[entityIndex].IpfsHash}`,
         }
 
