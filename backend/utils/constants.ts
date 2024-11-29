@@ -1,0 +1,1 @@
+export const imagesLocation = "./images/"

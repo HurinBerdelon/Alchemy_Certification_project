@@ -2,7 +2,6 @@
 pragma solidity ^0.8.27;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
@@ -10,6 +9,7 @@ import {IMythToken} from "./interfaces/IMythToken.sol";
 error MythNft__RangeOutOfBounds();
 error MythNft__NotEnoughTokensPaid();
 error MythNft__TransferFailed();
+error MythNft__NotEnoughBalance();
 
 contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     // Structures declarations
@@ -29,7 +29,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     // NFT variable
     uint256 public s_tokenCounter;
     uint256 internal constant MAX_CHANCE_VALUE = 100;
-    uint256 internal constant MAX_NUMBER_OF_COLLECTION = 34;
+    uint256 internal immutable i_maxNumberOfCollection;
     string[] internal s_tokenUris;
     uint256 internal immutable i_mintFee;
 
@@ -38,7 +38,7 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
 
     // Events
     event NftRequested(uint256 indexed requestId, address requester);
-    event NftMinted(Rarity rarity, address minter);
+    event NftMinted(uint256 indexed tokenId, Rarity indexed rarity, address indexed minter);
 
     // Type declarations
     enum Rarity {
@@ -50,39 +50,34 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
     constructor(
         address vrfClientAddress,
         uint256 subscriptionId,
-        bytes32 gasLane,
+        bytes32 gaslane,
         uint32 callbackGasLimit,
-        string[MAX_NUMBER_OF_COLLECTION] memory tokenUris,
+        uint256 maxNumberOfCollection,
+        string[] memory tokenUris,
         uint256 mintFee,
         address mythTokenAddress
     ) ERC721("Mythology Nft", "MTNFT") VRFConsumerBaseV2Plus(vrfClientAddress) {
         i_subscriptionId = subscriptionId;
-        i_gaslane = gasLane;
+        i_gaslane = gaslane;
+        i_maxNumberOfCollection = maxNumberOfCollection;
         i_callbackGasLimit = callbackGasLimit;
         s_tokenUris = tokenUris;
         i_mintFee = mintFee;
         i_mythTokenAddress = mythTokenAddress;
+        s_tokenCounter = 1;
     }
 
-    function withDraw() public {}
-
     function requestNft(uint256 price) public returns (uint256 requestId) {
-        // call token contract to validate if requester has enough tokens
-        // else revert
-
-        bool success = IMythToken(i_mythTokenAddress).handleMint(
-            msg.sender,
-            price
-        );
-
-        if (!success) {
+        if (price < i_mintFee) {
             revert MythNft__NotEnoughTokensPaid();
         }
+
+        IMythToken(i_mythTokenAddress).handleMintNFT(msg.sender, price);
 
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: i_gaslane,
-                subId: uint64(i_subscriptionId),
+                subId: i_subscriptionId,
                 requestConfirmations: REQUEST_CONFIRMATIONS,
                 callbackGasLimit: i_callbackGasLimit,
                 numWords: NUM_WORDS,
@@ -96,6 +91,8 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         s_requestIdToSender[requestId] = msg.sender;
 
         emit NftRequested(requestId, msg.sender);
+
+        return requestId;
     }
 
     function fulfillRandomWords(
@@ -105,8 +102,8 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         address nftOwner = s_requestIdToSender[requestId];
         uint256 newTokenId = s_tokenCounter;
 
-        uint256 moddedRng = randomWords[0] % MAX_NUMBER_OF_COLLECTION;
-        uint256 rarityRng = randomWords[1] % MAX_CHANCE_VALUE;
+        uint256 moddedRng = randomWords[0] % i_maxNumberOfCollection;
+        uint256 rarityRng = (randomWords[0] / moddedRng) % MAX_CHANCE_VALUE;
 
         Rarity rarity = getRarityFromRarityRng(rarityRng);
         s_tokenCounter++;
@@ -118,23 +115,18 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
             tokenUri: s_tokenUris[moddedRng]
         });
 
-        emit NftMinted(rarity, nftOwner);
+        emit NftMinted(newTokenId, rarity, nftOwner);
     }
 
-    function getRarityFromRarityRng(
-        uint256 rarityRng
-    ) public pure returns (Rarity) {
+    function getRarityFromRarityRng(uint256 rarityRng) public pure returns (Rarity) {
         uint256 cumulativeSum = 0;
         uint256[3] memory chanceArray = getChanceArray();
 
         for (uint256 i = 0; i < chanceArray.length; i++) {
-            if (
-                rarityRng >= cumulativeSum &&
-                rarityRng < cumulativeSum + chanceArray[i]
-            ) {
+            if (rarityRng >= cumulativeSum && rarityRng < chanceArray[i]) {
                 return Rarity(i);
             }
-            cumulativeSum += chanceArray[i];
+            cumulativeSum = chanceArray[i];
         }
 
         revert MythNft__RangeOutOfBounds();
@@ -156,9 +148,9 @@ contract MythNft is ERC721, VRFConsumerBaseV2Plus {
         return s_tokenCounter;
     }
 
-    function getTokenByTokenId(
-        uint256 tokenId
-    ) public view returns (TokenStructure memory) {}
+    function getTokenByTokenId(uint256 tokenId) public view returns (TokenStructure memory) {
+        return s_mythNftToken[tokenId];
+    }
 
     function getMythToken() external view returns (address) {
         return i_mythTokenAddress;
