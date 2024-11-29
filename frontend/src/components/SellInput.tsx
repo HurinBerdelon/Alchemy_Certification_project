@@ -8,7 +8,7 @@ interface SellInputProps {
     card: CollectionCard;
 }
 
-export function SellInput({ card }: SellInputProps) {
+export function SellInput({ card }: Readonly<SellInputProps>) {
     const [sellPrice, setSellPrice] = useState("");
 
     function handleChangePrice(event: ChangeEvent<HTMLInputElement>) {
@@ -34,7 +34,7 @@ export function SellInput({ card }: SellInputProps) {
                         MTC
                     </span>
                 </div>
-                <button className="px-4 w-full pt-1 rounded-md bg-red-900 text-white font-semibold">
+                <button className="px-4 w-full pt-1 rounded-md bg-red-800 text-white font-semibold">
                     Sell
                 </button>
             </div>

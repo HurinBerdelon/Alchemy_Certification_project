@@ -9,7 +9,7 @@ export default function Home() {
                     Welcome to Mythology Nft Collection
                 </h1>
                 <p>
-                    {`This app was develop as the final project for Alchemy
+                    {`This app was developed as the final project for Alchemy
                     Academy University Ethereum Bootcamp.
                     It is a collection of NFTs, where each NFT is a card of a character of the norse, greek or egytian mythology.
                     This app also has a marketplace where you can trade cards to fulfill your collection.`}
