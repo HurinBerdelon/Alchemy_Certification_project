@@ -16,7 +16,7 @@ export default function MyCollectionPage() {
     }
 
     return (
-        <main>
+        <div>
             <div className="flex justify-between mb-4">
                 <h1 className="text-2xl font-semibold">My Collection</h1>
                 <div>
@@ -44,6 +44,6 @@ export default function MyCollectionPage() {
                     ))}
                 </ul>
             </div>
-        </main>
+        </div>
     );
 }
