@@ -1,4 +1,4 @@
-import { TOTAL_COLLECTION } from "@/contants/totalCollection";
+import { TOTAL_COLLECTION } from "@/constants/totalCollection";
 import { CollectionCard } from "@/types/CollectionCard";
 import Image from "next/image";
 

@@ -1,4 +1,4 @@
-import { rewardByFrequency } from "@/contants/rewardByFrequency";
+import { rewardByFrequency } from "@/constants/rewardByFrequency";
 
 interface GetRewardByFrequencyParams {
     sequentialDays: string;
