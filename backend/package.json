@@ -3,9 +3,6 @@
     "version": "1.0.0",
     "main": "index.js",
     "license": "MIT",
-    "scripts": {
-        "upload:pinata": "ts-node ./scripts/99-upload-uri-to-pinata.ts"
-    },
     "dependencies": {
         "@chainlink/contracts": "^1.3.0",
         "@openzeppelin/contracts": "^5.1.0",
