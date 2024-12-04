@@ -33,4 +33,15 @@ const INITIAL_PRICE = "200000000000000000000" // 200e18
 const developmentChains = ["hardhat", "localhost"]
 const mythTokenAddress = process.env.MYTH_TOKEN_ADDRESS!
 
-export { networkConfig, DECIMALS, INITIAL_PRICE, developmentChains, mythTokenAddress }
+const frontendContractFile = "../frontend/src/constants/networkMapping.json"
+const frontendContractABILocation = "../frontend/src/constants/Abi"
+
+export {
+    networkConfig,
+    DECIMALS,
+    INITIAL_PRICE,
+    developmentChains,
+    mythTokenAddress,
+    frontendContractABILocation,
+    frontendContractFile,
+}

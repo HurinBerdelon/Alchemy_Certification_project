@@ -1,5 +1,7 @@
 import { ethers } from "hardhat"
 import { mythTokenAddress } from "../helper-hardhat-config"
+import { updateContractAddress } from "../utils/updateFrontendContractAddress"
+import { updateFrontendAbi } from "../utils/updateFrontendAbi"
 
 interface DeployMythNftParams {
     mythTokenAddress: string
@@ -19,6 +21,13 @@ export const deployMythNftMarketplace = async ({
 
     if (log) {
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
+    }
+
+    try {
+        updateContractAddress({ contractName, address: contractAddress })
+        updateFrontendAbi({ contractName })
+    } catch (error) {
+        console.log(error)
     }
 
     return mythNftMarketplace

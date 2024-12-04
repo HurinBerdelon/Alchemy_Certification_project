@@ -6,6 +6,8 @@ import verify from "../utils/verify"
 import { developmentChains, mythTokenAddress, networkConfig } from "../helper-hardhat-config"
 import { deployMock } from "./00-deploy-mocks"
 import tokenUris from "../utils/tokenUris/tokenUris.json"
+import { updateContractAddress } from "../utils/updateFrontendContractAddress"
+import { updateFrontendAbi } from "../utils/updateFrontendAbi"
 
 const FUND_AMOUNT = ethers.parseEther("1000")
 
@@ -94,6 +96,13 @@ export const deployMythNft = async ({
 
     if (log) {
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
+    }
+
+    try {
+        updateContractAddress({ contractName, address: contractAddress })
+        updateFrontendAbi({ contractName })
+    } catch (error) {
+        console.log(error)
     }
 
     return { mythNft, vrfCoordinatorV2_5Mock }
