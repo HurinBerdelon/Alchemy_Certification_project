@@ -43,7 +43,8 @@ describe("MythNftMarketplace Contract", () => {
         basicNft = contracts.basicNft
 
         fundUser = async (_user = buyerUser, amount = AMOUNT) => {
-            await mythToken.mintForUser(_user, amount)
+            const mythTokenUser = mythToken.connect(_user)
+            await mythTokenUser.fundMe(amount)
 
             const userBalance = await mythToken.balanceOf(_user)
 

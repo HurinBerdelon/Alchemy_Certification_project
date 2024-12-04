@@ -39,24 +39,27 @@ contract MythToken is IMythToken, ERC20 {
     }
 
     // When minting token for user, burn some from the contract itself
-    // TODO: update function to fund msg.sender and perhaps the name of the function to fundMe
-    function mintForUser(address to, uint256 value) external {
+    function fundMe(uint256 value) external {
         if (
-            s_lastFunds[to].timestamp > 0 &&
-            s_lastFunds[to].timestamp + (24 * 60 * 60) > block.timestamp
+            s_lastFunds[msg.sender].timestamp > 0 &&
+            block.timestamp < s_lastFunds[msg.sender].timestamp + (24 * 60 * 60)
         ) {
             revert MythToken__CannotFundUser();
         }
 
-        s_lastFunds[to] = LastFund({
-            sequentialDays: s_lastFunds[to].sequentialDays++,
-            timestamp: block.timestamp
-        });
+        if (block.timestamp > s_lastFunds[msg.sender].timestamp + (2 * 24 * 60 * 60)) {
+            s_lastFunds[msg.sender] = LastFund({sequentialDays: 1, timestamp: block.timestamp});
+        } else {
+            s_lastFunds[msg.sender] = LastFund({
+                sequentialDays: s_lastFunds[msg.sender].sequentialDays++,
+                timestamp: block.timestamp
+            });
+        }
 
         _burn(address(this), value);
-        _mint(to, value);
+        _mint(msg.sender, value);
 
-        emit UserFunded(to, value, block.timestamp);
+        emit UserFunded(msg.sender, value, block.timestamp);
     }
 
     // To be called by another contract (MythNft)

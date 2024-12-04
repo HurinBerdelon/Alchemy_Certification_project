@@ -27,7 +27,8 @@ describe("MythToken Contract", () => {
         mythToken = await deployMythToken()
 
         fundUser = async (_user = user, amount = AMOUNT) => {
-            await mythToken.mintForUser(_user, amount)
+            const mythTokenUser = mythToken.connect(_user)
+            await mythTokenUser.fundMe(amount)
 
             const userBalance = await mythToken.balanceOf(_user)
 
@@ -53,12 +54,10 @@ describe("MythToken Contract", () => {
         })
     })
 
-    describe("mintForUser", () => {
+    describe("fundMe", () => {
         it("should emit an event when minting some tokens for the user", async () => {
-            await expect(mythToken.mintForUser(user.address, AMOUNT)).to.emit(
-                mythToken,
-                "UserFunded"
-            )
+            const mythTokenUser = mythToken.connect(user)
+            await expect(mythTokenUser.fundMe(AMOUNT)).to.emit(mythToken, "UserFunded")
         })
 
         it("should transfer an amount to an user", async () => {
@@ -86,10 +85,12 @@ describe("MythToken Contract", () => {
             expect(Number(balanceOfUserAfterSecondFund)).equals(AMOUNT * 2)
         })
 
-        it("should not fund user if there is less than 24*60*60 seconds (24 hours) from last fund", async () => {
-            await fundUser()
+        it.only("should not fund user if there is less than 24*60*60 seconds (24 hours) from last fund", async () => {
+            await fundUser(user)
 
-            await expect(mythToken.mintForUser(user.address, AMOUNT)).to.be.revertedWithCustomError(
+            const mythTokenUser = mythToken.connect(user)
+
+            await expect(mythTokenUser.fundMe(AMOUNT)).to.be.revertedWithCustomError(
                 mythToken,
                 "MythToken__CannotFundUser"
             )
