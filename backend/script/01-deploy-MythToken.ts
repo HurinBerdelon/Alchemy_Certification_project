@@ -1,4 +1,6 @@
 import { ethers } from "hardhat"
+import { updateContractAddress } from "../utils/updateFrontendContractAddress"
+import { updateFrontendAbi } from "../utils/updateFrontendAbi"
 
 export const deployMythToken = async (log = false) => {
     const name = "Myth Token Coin"
@@ -13,6 +15,13 @@ export const deployMythToken = async (log = false) => {
 
     if (log) {
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
+    }
+
+    try {
+        updateContractAddress({ contractName, address: contractAddress })
+        updateFrontendAbi({ contractName })
+    } catch (error) {
+        console.log(error)
     }
 
     return mythToken
