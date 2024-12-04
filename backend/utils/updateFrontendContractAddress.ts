@@ -9,9 +9,15 @@ interface UpdateContractAddressProps {
 
 export async function updateContractAddress({ address, contractName }: UpdateContractAddressProps) {
     const chainId = network.config.chainId!
-    const contractAddresses = JSON.parse(readFileSync(frontendContractFile, "utf-8"))
+    let contractAddresses: { [key: string]: { [key: string]: string[] } }
+    try {
+        contractAddresses = JSON.parse(readFileSync(frontendContractFile, "utf-8"))
+    } catch (error) {
+        contractAddresses = {}
+    }
     if (chainId in contractAddresses) {
         if (!contractAddresses[chainId][contractName].includes(address)) {
+            console.log(address)
             contractAddresses[chainId][contractName].push(address)
         }
     } else {
