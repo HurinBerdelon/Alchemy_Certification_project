@@ -16,8 +16,9 @@ export async function updateContractAddress({ address, contractName }: UpdateCon
         contractAddresses = {}
     }
     if (chainId in contractAddresses) {
-        if (!contractAddresses[chainId][contractName].includes(address)) {
-            console.log(address)
+        if (!contractAddresses[chainId][contractName]) {
+            contractAddresses[chainId][contractName] = [address]
+        } else if (!contractAddresses[chainId][contractName].includes(address)) {
             contractAddresses[chainId][contractName].push(address)
         }
     } else {

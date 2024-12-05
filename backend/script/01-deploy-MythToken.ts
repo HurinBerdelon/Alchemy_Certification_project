@@ -1,6 +1,8 @@
-import { ethers } from "hardhat"
+import { ethers, network } from "hardhat"
 import { updateContractAddress } from "../utils/updateFrontendContractAddress"
 import { updateFrontendAbi } from "../utils/updateFrontendAbi"
+import { developmentChains } from "../helper-hardhat-config"
+import verify from "../utils/verify"
 
 interface DeployMythToken {
     log?: boolean
@@ -17,6 +19,10 @@ export const deployMythToken = async ({ log = false, updateFrontend = false }: D
     const mythToken = await contractFactory.deploy(name, symbol, initialSupply)
 
     const contractAddress = await mythToken.getAddress()
+
+    if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
+        await verify(contractAddress, [name, symbol, initialSupply])
+    }
 
     if (log) {
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
