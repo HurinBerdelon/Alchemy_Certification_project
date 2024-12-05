@@ -12,7 +12,7 @@ interface DeployMythToken {
 export const deployMythToken = async ({ log = false, updateFrontend = false }: DeployMythToken) => {
     const name = "Myth Token Coin"
     const symbol = "MTC"
-    const initialSupply = 1e9
+    const initialSupply = 1e12
     const contractName = "MythToken"
 
     const contractFactory = await ethers.getContractFactory(contractName)
