@@ -6,11 +6,13 @@ import { updateFrontendAbi } from "../utils/updateFrontendAbi"
 interface DeployMythNftParams {
     mythTokenAddress: string
     log?: boolean
+    updateFrontend?: boolean
 }
 
 export const deployMythNftMarketplace = async ({
     mythTokenAddress,
     log = false,
+    updateFrontend = false,
 }: DeployMythNftParams) => {
     const contractName = "MythNftMarketplace"
 
@@ -23,16 +25,20 @@ export const deployMythNftMarketplace = async ({
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
     }
 
-    try {
-        updateContractAddress({ contractName, address: contractAddress })
-        updateFrontendAbi({ contractName })
-    } catch (error) {
-        console.log(error)
+    if (updateFrontend) {
+        try {
+            updateContractAddress({ contractName, address: contractAddress })
+            updateFrontendAbi({ contractName })
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     return mythNftMarketplace
 }
 
-deployMythNftMarketplace({ mythTokenAddress: mythTokenAddress, log: true }).catch((error) =>
-    console.log(error)
-)
+deployMythNftMarketplace({
+    mythTokenAddress: mythTokenAddress,
+    log: true,
+    updateFrontend: true,
+}).catch((error) => console.log(error))
