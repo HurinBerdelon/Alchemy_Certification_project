@@ -29,7 +29,7 @@ describe("MythNft Contract", () => {
         const accounts = await ethers.getSigners()
         user = accounts[1]
 
-        mythToken = await deployMythToken()
+        mythToken = await deployMythToken({ log: false, updateFrontend: false })
         const mythTokenAddress = await mythToken.getAddress()
 
         const contracts = await deployMythNft({
@@ -59,7 +59,6 @@ describe("MythNft Contract", () => {
             const mintFee = await mythNft.getMintFee()
             const tokenUri = await mythNft.getTokenUris(0)
             const _mythTokenAddress = await mythNft.getMythToken()
-
             expect(mintFee).equals(networkConfig[chainId].mintFee)
             expect(tokenUri).equals(tokenUrisMock[0])
             expect(_mythTokenAddress).equals(await mythToken.getAddress())

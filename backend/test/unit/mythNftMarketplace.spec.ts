@@ -34,7 +34,7 @@ describe("MythNftMarketplace Contract", () => {
         sellerUser = accounts[0]
         buyerUser = accounts[1]
 
-        mythToken = await deployMythToken()
+        mythToken = await deployMythToken({ log: false, updateFrontend: false })
         const mythTokenAddress = await mythToken.getAddress()
 
         mythNftMarketplace = await deployMythNftMarketplace({ mythTokenAddress, log: false })

@@ -5,8 +5,6 @@ import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IMythToken} from "./interfaces/IMythToken.sol";
 
-import "hardhat/console.sol";
-
 error MythNftMarketplace__PriceMustBeAboveZero();
 error MythNftMarketplace__NotApprovedForMarketplace();
 error MythNftMarketplace__AlreadyListed(address nftAddress, uint256 tokenId);

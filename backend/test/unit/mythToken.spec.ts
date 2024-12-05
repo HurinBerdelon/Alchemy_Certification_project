@@ -24,7 +24,7 @@ describe("MythToken Contract", () => {
         externalContract = accounts[2]
         sellerUser = accounts[3]
 
-        mythToken = await deployMythToken()
+        mythToken = await deployMythToken({ log: false, updateFrontend: false })
 
         fundUser = async (_user = user, amount = AMOUNT) => {
             const mythTokenUser = mythToken.connect(_user)
@@ -85,7 +85,7 @@ describe("MythToken Contract", () => {
             expect(Number(balanceOfUserAfterSecondFund)).equals(AMOUNT * 2)
         })
 
-        it.only("should not fund user if there is less than 24*60*60 seconds (24 hours) from last fund", async () => {
+        it("should not fund user if there is less than 24*60*60 seconds (24 hours) from last fund", async () => {
             await fundUser(user)
 
             const mythTokenUser = mythToken.connect(user)
