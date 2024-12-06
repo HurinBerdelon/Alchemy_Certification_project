@@ -5,7 +5,7 @@ import { expect } from "chai"
 
 import { deployMythNft } from "../../script/02-deploy-MythNft"
 import { networkConfig } from "../../helper-hardhat-config"
-import { MythNft, MythToken, VRFCoordinatorV2_5Mock } from "../../typechain-types"
+import { MythNft, MythToken } from "../../typechain-types"
 import tokenUrisMock from "../mock/tokenUrisMock.json"
 import { deployMythToken } from "../../script/01-deploy-MythToken"
 
@@ -18,12 +18,19 @@ describe("MythNft Contract", () => {
     let mythToken: MythToken & {
         deploymentTransaction(): ContractTransactionResponse
     }
-    let vrfCoordinatorV2_5Mock: VRFCoordinatorV2_5Mock & {
-        deploymentTransaction(): ContractTransactionResponse
-    }
+    // let vrfCoordinatorV2_5Mock: VRFCoordinatorV2_5Mock & {
+    //     deploymentTransaction(): ContractTransactionResponse
+    // }
     const chainId = network.config.chainId ?? 31337
     let fundUser: (user?: HardhatEthersSigner, amount?: string) => Promise<{ userBalance: number }>
     const mintFee = networkConfig[chainId].mintFee ?? "500"
+
+    let nftIndex: number
+    let nftRarity: number
+
+    function getIntRandom() {
+        return Math.floor(Math.random() * 3 * 34 * 1e4)
+    }
 
     beforeEach(async () => {
         const accounts = await ethers.getSigners()
@@ -39,10 +46,13 @@ describe("MythNft Contract", () => {
             log: false,
         })
 
+        nftIndex = getIntRandom()
+        nftRarity = getIntRandom()
+
         mythNft = contracts.mythNft
-        vrfCoordinatorV2_5Mock = contracts.vrfCoordinatorV2_5Mock as VRFCoordinatorV2_5Mock & {
-            deploymentTransaction(): ContractTransactionResponse
-        }
+        // vrfCoordinatorV2_5Mock = contracts.vrfCoordinatorV2_5Mock as VRFCoordinatorV2_5Mock & {
+        //     deploymentTransaction(): ContractTransactionResponse
+        // }
 
         fundUser = async (_user = user, amount = mintFee) => {
             const mythTokenUser = mythToken.connect(_user)
@@ -72,7 +82,10 @@ describe("MythNft Contract", () => {
             const mythTokenUser = mythToken.connect(user)
             mythTokenUser.approve(await mythNftUser.getAddress(), mintFee)
 
-            await expect(mythNftUser.requestNft(mintFee)).to.emit(mythNft, "NftRequested")
+            await expect(mythNftUser.requestNft(mintFee, nftIndex, nftRarity)).to.emit(
+                mythNft,
+                "NftMinted"
+            )
         })
 
         it("should revert if user doesn't pay enough token", async () => {
@@ -81,10 +94,9 @@ describe("MythNft Contract", () => {
             const mythTokenUser = mythToken.connect(user)
             mythTokenUser.approve(await mythNftUser.getAddress(), mintFee)
 
-            await expect(mythNftUser.requestNft(0)).to.be.revertedWithCustomError(
-                mythNftUser,
-                "MythNft__NotEnoughTokensPaid"
-            )
+            await expect(
+                mythNftUser.requestNft(0, nftIndex, nftRarity)
+            ).to.be.revertedWithCustomError(mythNftUser, "MythNft__NotEnoughTokensPaid")
         })
 
         it("should revert if user doesn't have enough balance", async () => {
@@ -92,52 +104,52 @@ describe("MythNft Contract", () => {
             const mythTokenUser = mythToken.connect(user)
             mythTokenUser.approve(await mythNftUser.getAddress(), mintFee)
 
-            await expect(mythNftUser.requestNft(mintFee)).to.be.reverted
+            await expect(mythNftUser.requestNft(mintFee, nftIndex, nftRarity)).to.be.reverted
         })
     })
 
-    describe("fulfillRandomWords", () => {
-        it("should mint NFT after generating a random number", async () => {
-            await fundUser()
-            const mythNftUser = mythNft.connect(user)
-            const mythTokenUser = mythToken.connect(user)
-            mythTokenUser.approve(await mythNftUser.getAddress(), mintFee)
+    // describe("fulfillRandomWords", () => {
+    //     it("should mint NFT after generating a random number", async () => {
+    //         await fundUser()
+    //         const mythNftUser = mythNft.connect(user)
+    //         const mythTokenUser = mythToken.connect(user)
+    //         mythTokenUser.approve(await mythNftUser.getAddress(), mintFee)
 
-            await new Promise<void>(async (resolve, reject) => {
-                //@ts-ignore
-                mythNftUser.once("NftMinted", async () => {
-                    try {
-                        const tokenUri = await mythNftUser.getTokenUris(0)
-                        const tokenCounter = await mythNftUser.getTokenCounter()
-                        const tokenStructure = await mythNftUser.getTokenByTokenId(1)
+    //         await new Promise<void>(async (resolve, reject) => {
+    //             //@ts-ignore
+    //             mythNftUser.once("NftMinted", async () => {
+    //                 try {
+    //                     const tokenUri = await mythNftUser.getTokenUris(0)
+    //                     const tokenCounter = await mythNftUser.getTokenCounter()
+    //                     const tokenStructure = await mythNftUser.getTokenByTokenId(1)
 
-                        expect(tokenUri.toString()).equals(tokenUrisMock[0])
-                        expect(tokenCounter.toString()).equals("2")
-                        expect(tokenStructure[0].toString()).equals("0")
-                        expect(tokenStructure[1]).includes("mockedTokenUri")
-                        resolve()
-                    } catch (error) {
-                        console.log(error)
-                        reject(error as Error)
-                    }
-                })
+    //                     expect(tokenUri.toString()).equals(tokenUrisMock[0])
+    //                     expect(tokenCounter.toString()).equals("2")
+    //                     expect(tokenStructure[0].toString()).equals("0")
+    //                     expect(tokenStructure[1]).includes("mockedTokenUri")
+    //                     resolve()
+    //                 } catch (error) {
+    //                     console.log(error)
+    //                     reject(error as Error)
+    //                 }
+    //             })
 
-                try {
-                    const transactionResponse = await mythNftUser.requestNft(mintFee)
-                    const transactionReceipt = await transactionResponse.wait(1)
+    //             try {
+    //                 const transactionResponse = await mythNftUser.requestNft(mintFee)
+    //                 const transactionReceipt = await transactionResponse.wait(1)
 
-                    await vrfCoordinatorV2_5Mock.fulfillRandomWords(
-                        // @ts-ignore
-                        transactionReceipt?.logs[2].args[0],
-                        await mythNftUser.getAddress()
-                    )
-                } catch (error) {
-                    console.log(error)
-                    reject(error as Error)
-                }
-            })
-        })
-    })
+    //                 await vrfCoordinatorV2_5Mock.fulfillRandomWords(
+    //                     // @ts-ignore
+    //                     transactionReceipt?.logs[2].args[0],
+    //                     await mythNftUser.getAddress()
+    //                 )
+    //             } catch (error) {
+    //                 console.log(error)
+    //                 reject(error as Error)
+    //             }
+    //         })
+    //     })
+    // })
 
     describe("getRarityFromRarityRng", () => {
         it("should return a rarity from a rarityRng", async () => {

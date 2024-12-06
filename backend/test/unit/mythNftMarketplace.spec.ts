@@ -37,7 +37,10 @@ describe("MythNftMarketplace Contract", () => {
         mythToken = await deployMythToken({ log: false, updateFrontend: false })
         const mythTokenAddress = await mythToken.getAddress()
 
-        mythNftMarketplace = await deployMythNftMarketplace({ mythTokenAddress, log: false })
+        mythNftMarketplace = await deployMythNftMarketplace({
+            _mythTokenAddress: mythTokenAddress,
+            log: false,
+        })
 
         const contracts = await deployMock(false)
         basicNft = contracts.basicNft

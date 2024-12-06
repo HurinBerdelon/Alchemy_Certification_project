@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 dotenv.config()
 
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "http://eth-sepolia/example"
+const HOLESKY_RPC_URL = process.env.HOLESKY_RPC_URL || "http://eth-sepolia/example"
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0xKEY"
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "0xKEY"
 
@@ -15,11 +16,16 @@ const config: HardhatUserConfig = {
         hardhat: {
             chainId: 31337,
         },
-        // sepolia: {
-        //     url: SEPOLIA_RPC_URL,
-        //     accounts: [PRIVATE_KEY],
-        //     chainId: 11155111,
-        // },
+        sepolia: {
+            url: SEPOLIA_RPC_URL,
+            accounts: [PRIVATE_KEY],
+            chainId: 11155111,
+        },
+        holesky: {
+            url: HOLESKY_RPC_URL,
+            accounts: [PRIVATE_KEY],
+            chainId: 17000,
+        },
     },
     gasReporter: {
         enabled: false,
