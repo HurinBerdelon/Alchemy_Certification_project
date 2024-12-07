@@ -16,7 +16,7 @@ export const CARD = {
 
 export function RecentListed() {
     return (
-        <ul className="flex flex-wrap justify-start gap-8">
+        <ul className="flex flex-wrap justify-center gap-8">
             <li>
                 <ListedCard card={CARD} />
             </li>

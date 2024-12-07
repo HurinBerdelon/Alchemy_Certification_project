@@ -26,7 +26,7 @@ export function SubHeader() {
             <Link
                 href="/my-collection"
                 className={`${
-                    pathName === "/my-collection" ? "underline" : ""
+                    pathName.includes("/my-collection") ? "underline" : ""
                 } hover:opacity-90`}
             >
                 My Colletion

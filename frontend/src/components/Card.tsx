@@ -16,7 +16,7 @@ export function Card({ card }: Readonly<CardProps>) {
                         {card.name}
                     </h2>
                     <Link
-                        href={`/collections/${card.owner}`}
+                        href={`/collection/${card.owner}`}
                         className="italic text-sm"
                     >
                         {card.owner}

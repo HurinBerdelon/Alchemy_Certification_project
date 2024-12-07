@@ -2,15 +2,21 @@
 
 import { BuyNewPack } from "@/components/BuyNewPack";
 import { Card } from "@/components/Card";
-import { CardBack } from "@/components/CardBack";
 import { CollectionNavbar } from "@/components/CollectionNavbar";
 import { FundMe } from "@/components/FundMe";
 import { CARD } from "@/components/RecentListed";
-import { fullCollectionCards } from "@/constants/entities";
+import { SellInput } from "@/components/SellInput";
+import { useState } from "react";
 
 const CARDS = [CARD, CARD, CARD];
 
 export default function MyCollectionPage() {
+    const [showSellButton, setShowSellButton] = useState(false);
+
+    function toggleShowSellButton() {
+        setShowSellButton((prevState) => !prevState);
+    }
+
     return (
         <div className="px-4">
             <div className="border-t-[1px] border-zinc-900 py-2">
@@ -28,15 +34,21 @@ export default function MyCollectionPage() {
                 </div>
             </div>
             <div>
+                <div className="mb-2 flex gap-1 items-center">
+                    <input
+                        id="showSellButton"
+                        type="checkbox"
+                        onChange={toggleShowSellButton}
+                    />
+                    <label htmlFor="showSellButton">Show Sell Buttons</label>
+                </div>
                 <ul className="flex flex-wrap justify-center gap-8">
-                    {fullCollectionCards.map((card) => (
-                        <li key={card.name}>
-                            {CARDS.map((ownedCard) => ownedCard.name).includes(
-                                card.name
-                            ) ? (
-                                <Card card={CARDS[0]} />
+                    {CARDS.map((card) => (
+                        <li key={card.serialNumber}>
+                            {showSellButton ? (
+                                <SellInput card={card} />
                             ) : (
-                                <CardBack name={card.name} />
+                                <Card card={card} />
                             )}
                         </li>
                     ))}

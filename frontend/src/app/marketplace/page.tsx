@@ -8,7 +8,7 @@ export default function MarketplacePage() {
             <p className="mb-8">
                 Buy new cards and Sell the cards you do not want anymore.
             </p>
-            <ul className="flex flex-wrap justify-start gap-8">
+            <ul className="flex flex-wrap justify-center gap-8">
                 <li>
                     <ListedCard card={CARD} />
                 </li>
