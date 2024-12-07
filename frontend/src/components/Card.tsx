@@ -1,6 +1,7 @@
 import { TOTAL_COLLECTION } from "@/constants/totalCollection";
 import { CollectionCard } from "@/types/CollectionCard";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CardProps {
     card: CollectionCard;
@@ -14,7 +15,12 @@ export function Card({ card }: Readonly<CardProps>) {
                     <h2 className="text-left text-2xl font-semibold capitalize">
                         {card.name}
                     </h2>
-                    <p className="italic text-sm">{card.owner}</p>
+                    <Link
+                        href={`/collection/${card.owner}`}
+                        className="italic text-sm"
+                    >
+                        {card.owner}
+                    </Link>
                 </div>
                 <div className="w-full">
                     <Image
