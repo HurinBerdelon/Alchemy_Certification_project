@@ -1,7 +1,7 @@
 import { packPrice } from "@/constants/packPrice";
 import { Card } from "@/types/Card";
 import { User } from "@/types/User";
-import { createContext, ReactNode, useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface CardsProviderProps {
     children: ReactNode;
@@ -41,4 +41,8 @@ export function CardsProvider({ children }: Readonly<CardsProviderProps>) {
             {children}
         </CardsContext.Provider>
     );
+}
+
+export function useCards() {
+    return useContext(CardsContext);
 }
