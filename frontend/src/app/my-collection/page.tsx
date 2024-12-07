@@ -1,5 +1,6 @@
 "use client";
 
+import { BuyNewPack } from "@/components/BuyNewPack";
 import { Card } from "@/components/Card";
 import { FundMe } from "@/components/FundMe";
 import { CARD } from "@/components/RecentListed";
@@ -17,8 +18,13 @@ export default function MyCollectionPage() {
 
     return (
         <div>
-            <div className="flex justify-between mb-4">
-                <h1 className="text-2xl font-semibold">My Collection</h1>
+            <div className="flex justify-between mb-8">
+                <div className="flex flex-col gap-8">
+                    <h1 className="text-2xl font-semibold">My Collection</h1>
+                    <div>
+                        <BuyNewPack />
+                    </div>
+                </div>
                 <div>
                     <FundMe />
                 </div>

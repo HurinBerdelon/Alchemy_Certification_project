@@ -17,7 +17,7 @@ export default function AboutPage() {
 
             <section id="instructions" className="mb-4 flex flex-col gap-2">
                 <h3 className="text-xl font-semibold mb-2">Instructions</h3>
-                <p>
+                <div>
                     <span>
                         {`To interact with this project you will need a web3 wallet, we recommend `}
                     </span>
@@ -58,7 +58,7 @@ export default function AboutPage() {
                         blog post
                     </Link>
                     <span>{` for a more in deep guide.`}</span>
-                </p>
+                </div>
             </section>
 
             <section id="technologies" className="mb-4 flex flex-col gap-2">
