@@ -49,7 +49,7 @@ describe("MythToken Contract", () => {
             const totalSupply = await mythToken.totalSupply()
             const balanceOfOwner = await mythToken.balanceOf(mythToken.getAddress())
 
-            expect(totalSupply.toString()).equals((1e9).toString())
+            expect(totalSupply.toString()).equals((1e12).toString())
             expect(balanceOfOwner.toString()).equals(totalSupply.toString())
         })
     })
@@ -198,6 +198,19 @@ describe("MythToken Contract", () => {
                 mythTokenSeller,
                 "MythToken__NoProceeds"
             )
+        })
+    })
+
+    describe("getFrequency", () => {
+        it("should get the frequency of funds", async () => {
+            await fundUser(user)
+
+            const mythTokenUser = mythToken.connect(user)
+
+            const frequency = await mythTokenUser.getFrequency()
+
+            expect(frequency[0].toString()).equal((1).toString())
+            expect(Number(frequency[1])).to.be.above(0)
         })
     })
 })

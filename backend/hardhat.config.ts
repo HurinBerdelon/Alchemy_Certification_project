@@ -37,9 +37,6 @@ const config: HardhatUserConfig = {
     mocha: {
         timeout: 300000, // 300 seconds
     },
-    ignition: {
-        // requiredConfirmations: 6,
-    },
 }
 
 export default config

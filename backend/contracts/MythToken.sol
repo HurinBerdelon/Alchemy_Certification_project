@@ -107,4 +107,8 @@ contract MythToken is IMythToken, ERC20 {
     function getProceeds() external view returns (uint256) {
         return s_proceeds[msg.sender];
     }
+
+    function getFrequency() external view returns (LastFund memory) {
+        return s_lastFunds[msg.sender];
+    }
 }
