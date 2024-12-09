@@ -1,10 +1,16 @@
+"use client";
+
 import { RecentListed } from "@/components/RecentListed";
+import { useUser } from "@/hooks/useUser";
 import Link from "next/link";
 
 export default function Home() {
+    const { authUser } = useUser();
+
     return (
         <>
             <section id="introduction" className="mb-4">
+                <button onClick={authUser}>CONNECT</button>
                 <h1 className="text-2xl font-bold mb-2">
                     Welcome to Mythology Nft Collection
                 </h1>

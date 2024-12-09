@@ -1,6 +1,10 @@
+"use client";
+
 import { createContext, ReactNode, useContext, useState } from "react";
 
 import { User } from "@/types/User";
+import { ethers, Contract } from "ethers";
+import MythTokenABI from "@/constants/Abi/MythToken.json";
 
 interface UserProviderProps {
     children: ReactNode;
@@ -8,6 +12,7 @@ interface UserProviderProps {
 
 interface UserContextProps {
     user: User;
+    mythTokenContract: Contract | undefined;
     authUser: () => Promise<void>;
     fundUser: (value: number) => Promise<void>;
 }
@@ -15,6 +20,9 @@ interface UserContextProps {
 const UserContext = createContext<UserContextProps>({} as UserContextProps);
 
 export function UserProvider({ children }: Readonly<UserProviderProps>) {
+    const [mythTokenContract, setMythTokenContract] = useState<
+        Contract | undefined
+    >();
     const [user, setUser] = useState<User>({
         address: "",
         balance: 0,
@@ -23,39 +31,67 @@ export function UserProvider({ children }: Readonly<UserProviderProps>) {
     });
 
     async function authUser() {
+        if (window.ethereum === "undefined") {
+            console.error(`window.ethereum is not defined`);
+            return;
+        }
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+
+        const signer = await provider.getSigner();
+
+        const contract = new ethers.Contract("", MythTokenABI, signer);
+
+        setMythTokenContract(contract);
+
         const user: User = {
-            address: "",
+            address: signer.address,
             balance: 0,
             lastFund: 0,
             sequentialFunds: 0,
         };
         setUser(user);
+
+        getUserBalance();
     }
 
     async function fundUser(value: number) {
-        // TODO: fundUser
+        try {
+            // TODO: fundUser
+            await mythTokenContract!.fundMe(value);
 
-        await getUserBalance();
+            await getUserBalance();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async function getUserBalance() {
-        // TODO: getBalance
-        // TODO: getFrequency
+        try {
+            // TODO: getFrequency
 
-        const balance = 0;
-        const lastFund = 0;
-        const sequentialFunds = 0;
+            const lastFund = 0;
+            const sequentialFunds = 0;
 
-        setUser((prevState) => ({
-            ...prevState,
-            balance: balance,
-            lastFund,
-            sequentialFunds,
-        }));
+            const userBalance = await mythTokenContract!.balanceOf(
+                user.address
+            );
+
+            setUser((prevState) => ({
+                ...prevState,
+                balance: userBalance,
+                lastFund,
+                sequentialFunds,
+            }));
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (
-        <UserContext.Provider value={{ authUser, fundUser, user }}>
+        <UserContext.Provider
+            value={{ mythTokenContract, user, authUser, fundUser }}
+        >
             {children}
         </UserContext.Provider>
     );

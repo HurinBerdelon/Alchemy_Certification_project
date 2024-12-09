@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { SubHeader } from "@/components/SubHeader";
 import { Footer } from "@/components/Footer";
+import { UserProvider } from "@/hooks/useUser";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -28,14 +29,16 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-            >
-                <Header />
-                <SubHeader />
-                <main className="p-4 flex-1 mb-8">{children}</main>
-                <Footer />
-            </body>
+            <UserProvider>
+                <body
+                    className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+                >
+                    <Header />
+                    <SubHeader />
+                    <main className="p-4 flex-1 mb-8">{children}</main>
+                    <Footer />
+                </body>
+            </UserProvider>
         </html>
     );
 }

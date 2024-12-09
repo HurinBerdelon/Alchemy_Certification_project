@@ -1,3 +1,5 @@
+"use client";
+
 import {
     createContext,
     ReactNode,
@@ -7,6 +9,9 @@ import {
 } from "react";
 
 import { Card } from "@/types/Card";
+import { ethers } from "ethers";
+import { Contract } from "ethers";
+import MythMarketplaceAbi from "@/constants/Abi/MythNftMarketplace.json";
 
 interface MarketplaceProviderProps {
     children: ReactNode;
@@ -26,40 +31,80 @@ const MarketplaceContext = createContext<MarketplaceContextProps>(
 
 export function MarketplaceProvider({ children }: MarketplaceProviderProps) {
     const [listedCards, setListedCards] = useState<Card[]>([]);
+    const [mythMarketplaceContract, setMythMarketplaceContract] =
+        useState<Contract>();
 
     useEffect(() => {
         getListedCards();
+        getProvider();
     }, []);
 
-    async function getListedCards() {
-        // TODO: call getListed Cards
-        const listedCardsResponse: Card[] = [];
+    async function getProvider() {
+        if (window.ethereum === "undefined") {
+            console.error(`window.ethereum is not defined`);
+            return;
+        }
 
-        setListedCards(listedCardsResponse);
+        const provider = new ethers.BrowserProvider(window.ethereum);
+
+        const signer = await provider.getSigner();
+
+        const contract = new ethers.Contract("", MythMarketplaceAbi, signer);
+
+        setMythMarketplaceContract(contract);
+    }
+
+    async function getListedCards() {
+        try {
+            // TODO: call getListed Cards
+            const listedCardsResponse: Card[] = [];
+
+            setListedCards(listedCardsResponse);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async function listCard(tokenId: string, price: number) {
-        // TODO: List card
+        try {
+            // TODO: List card
+            await mythMarketplaceContract!.listItem("", tokenId, price);
 
-        await getListedCards();
+            await getListedCards();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async function updateListedCard(tokenId: string, newPrice: number) {
-        // TODO: Update listed card
-
-        await getListedCards();
+        try {
+            // TODO: Update listed card
+            await mythMarketplaceContract!.updateListing("", tokenId, newPrice);
+            await getListedCards();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
-    async function buyCard(tokenId: string, value: number) {
-        // TODO: Buy the card
-
-        await getListedCards();
+    async function buyCard(tokenId: string) {
+        try {
+            // TODO: Buy the card
+            await mythMarketplaceContract!.buyItem("", tokenId);
+            await getListedCards();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async function cancelListing(tokenId: string) {
-        // TODO: Cancel Listing
+        try {
+            // TODO: Cancel Listing
+            await mythMarketplaceContract!.cancelListing("", tokenId);
 
-        await getListedCards();
+            await getListedCards();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (
