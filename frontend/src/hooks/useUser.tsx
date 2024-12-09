@@ -69,17 +69,17 @@ export function UserProvider({ children }: Readonly<UserProviderProps>) {
     async function getUserBalance() {
         try {
             // TODO: getFrequency
-
-            const lastFund = 0;
-            const sequentialFunds = 0;
-
             const userBalance = await mythTokenContract!.balanceOf(
                 user.address
             );
+            const userFrequency = await mythTokenContract!.getFrequency();
+
+            const sequentialFunds = Number(userFrequency[0]);
+            const lastFund = Number(userFrequency[1]);
 
             setUser((prevState) => ({
                 ...prevState,
-                balance: userBalance,
+                balance: Number(userBalance),
                 lastFund,
                 sequentialFunds,
             }));
