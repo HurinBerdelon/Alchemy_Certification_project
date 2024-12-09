@@ -1,5 +1,6 @@
-import { User } from "@/types/User";
 import { createContext, ReactNode, useContext, useState } from "react";
+
+import { User } from "@/types/User";
 
 interface UserProviderProps {
     children: ReactNode;
