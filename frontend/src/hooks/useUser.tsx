@@ -5,6 +5,7 @@ import { createContext, ReactNode, useContext, useState } from "react";
 import { User } from "@/types/User";
 import { ethers, Contract } from "ethers";
 import MythTokenABI from "@/constants/Abi/MythToken.json";
+import { parsedAddress } from "@/utils/parsedAddress";
 
 interface UserProviderProps {
     children: ReactNode;
@@ -25,6 +26,7 @@ export function UserProvider({ children }: Readonly<UserProviderProps>) {
     >();
     const [user, setUser] = useState<User>({
         address: "",
+        UIAddress: "",
         balance: 0,
         lastFund: 0,
         sequentialFunds: 0,
@@ -46,6 +48,7 @@ export function UserProvider({ children }: Readonly<UserProviderProps>) {
 
         const user: User = {
             address: signer.address,
+            UIAddress: parsedAddress(signer.address),
             balance: 0,
             lastFund: 0,
             sequentialFunds: 0,
