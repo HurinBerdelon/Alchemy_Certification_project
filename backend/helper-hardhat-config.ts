@@ -18,7 +18,7 @@ const networkConfig: { [key: number]: NetworkConfig } = {
     11155111: {
         name: "sepolia",
         gaslane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c", // 30 gwei
-        mintFee: "100",
+        mintFee: (100 * 1e18).toString(),
         callbackGasLimit: "500000", // 500,000 gas
         vrfCoordinatorV2_5Address: "",
         subscriptionId: "",
@@ -27,7 +27,7 @@ const networkConfig: { [key: number]: NetworkConfig } = {
         name: "holesky",
         callbackGasLimit: "500000", // 500,000 gas
         gaslane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
-        mintFee: "100",
+        mintFee: (100 * 1e18).toString(),
     },
 }
 
@@ -36,6 +36,7 @@ const mythTokenAddress = process.env.MYTH_TOKEN_ADDRESS!
 
 const frontendContractFile = "../frontend/src/constants/networkMapping.json"
 const frontendContractABILocation = "../frontend/src/constants/Abi"
+const initialSupply = 1e9 * 1e18
 
 export {
     networkConfig,
@@ -43,4 +44,5 @@ export {
     mythTokenAddress,
     frontendContractABILocation,
     frontendContractFile,
+    initialSupply,
 }

@@ -1,7 +1,7 @@
 import { ethers, network } from "hardhat"
 import { updateContractAddress } from "../utils/updateFrontendContractAddress"
 import { updateFrontendAbi } from "../utils/updateFrontendAbi"
-import { developmentChains } from "../helper-hardhat-config"
+import { developmentChains, initialSupply } from "../helper-hardhat-config"
 import verify from "../utils/verify"
 
 interface DeployMythToken {
@@ -12,16 +12,16 @@ interface DeployMythToken {
 export const deployMythToken = async ({ log = false, updateFrontend = false }: DeployMythToken) => {
     const name = "Myth Token Coin"
     const symbol = "MTC"
-    const initialSupply = 1e12
+    const _initialSupply = BigInt(initialSupply)
     const contractName = "MythToken"
 
     const contractFactory = await ethers.getContractFactory(contractName)
-    const mythToken = await contractFactory.deploy(name, symbol, initialSupply)
+    const mythToken = await contractFactory.deploy(name, symbol, _initialSupply)
 
     const contractAddress = await mythToken.getAddress()
 
     if (!developmentChains.includes(network.name) && process.env.ETHERSCAN_API_KEY) {
-        await verify(contractAddress, [name, symbol, initialSupply])
+        await verify(contractAddress, [name, symbol, _initialSupply])
     }
 
     if (log) {

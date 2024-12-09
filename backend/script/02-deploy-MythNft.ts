@@ -22,7 +22,6 @@ interface DeployMythNftParams {
 export const deployMythNft = async ({
     tokenUris = new Array(34).fill(""),
     _mythTokenAddress = mythTokenAddress,
-    maxNumberOfCollection = 34,
     log = false,
     updateFrontend = false,
 }: DeployMythNftParams) => {
@@ -64,7 +63,6 @@ export const deployMythNft = async ({
         // subscriptionId,
         // gaslane,
         // callbackGasLimit,
-        maxNumberOfCollection,
         tokenUris,
         mintFee,
         _mythTokenAddress,
@@ -76,7 +74,6 @@ export const deployMythNft = async ({
         // subscriptionId,
         // gaslane,
         // callbackGasLimit,
-        maxNumberOfCollection,
         tokenUris,
         mintFee,
         _mythTokenAddress

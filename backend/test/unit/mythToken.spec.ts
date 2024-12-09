@@ -6,6 +6,7 @@ import { time } from "@nomicfoundation/hardhat-network-helpers"
 
 import { MythToken } from "../../typechain-types"
 import { deployMythToken } from "../../script/01-deploy-MythToken"
+import { initialSupply } from "../../helper-hardhat-config"
 
 describe("MythToken Contract", () => {
     let user: HardhatEthersSigner
@@ -49,7 +50,7 @@ describe("MythToken Contract", () => {
             const totalSupply = await mythToken.totalSupply()
             const balanceOfOwner = await mythToken.balanceOf(mythToken.getAddress())
 
-            expect(totalSupply.toString()).equals((1e12).toString())
+            expect(totalSupply.toString()).equals(BigInt(initialSupply).toString())
             expect(balanceOfOwner.toString()).equals(totalSupply.toString())
         })
     })

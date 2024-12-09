@@ -30,7 +30,6 @@ contract MythNft is ERC721 {
     // NFT variable
     uint256 public s_tokenCounter;
     uint256 internal constant MAX_CHANCE_VALUE = 100;
-    uint256 internal immutable i_maxNumberOfCollection;
     string[] internal s_tokenUris;
     uint256 internal immutable i_mintFee;
 
@@ -53,7 +52,6 @@ contract MythNft is ERC721 {
         // uint256 subscriptionId,
         // bytes32 gaslane,
         // uint32 callbackGasLimit,
-        uint256 maxNumberOfCollection,
         string[] memory tokenUris,
         uint256 mintFee,
         address mythTokenAddress
@@ -64,7 +62,6 @@ contract MythNft is ERC721 {
         // i_subscriptionId = subscriptionId;
         // i_gaslane = gaslane;
         // i_callbackGasLimit = callbackGasLimit;
-        i_maxNumberOfCollection = maxNumberOfCollection;
         s_tokenUris = tokenUris;
         i_mintFee = mintFee;
         i_mythTokenAddress = mythTokenAddress;
@@ -81,7 +78,7 @@ contract MythNft is ERC721 {
         address nftOwner = msg.sender;
         uint256 newTokenId = s_tokenCounter;
 
-        uint256 moddedRng = nftIndex % i_maxNumberOfCollection;
+        uint256 moddedRng = nftIndex % s_tokenUris.length;
         uint256 rarityRng = nftRarity % MAX_CHANCE_VALUE;
 
         Rarity rarity = getRarityFromRarityRng(rarityRng);
