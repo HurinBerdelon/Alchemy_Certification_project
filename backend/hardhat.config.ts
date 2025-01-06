@@ -21,11 +21,6 @@ const config: HardhatUserConfig = {
             accounts: [PRIVATE_KEY],
             chainId: 11155111,
         },
-        holesky: {
-            url: HOLESKY_RPC_URL,
-            accounts: [PRIVATE_KEY],
-            chainId: 17000,
-        },
     },
     gasReporter: {
         enabled: false,

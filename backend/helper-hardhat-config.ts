@@ -23,12 +23,6 @@ const networkConfig: { [key: number]: NetworkConfig } = {
         vrfCoordinatorV2_5Address: "",
         subscriptionId: "",
     },
-    17000: {
-        name: "holesky",
-        callbackGasLimit: "500000", // 500,000 gas
-        gaslane: "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
-        mintFee: (100 * 1e18).toString(),
-    },
 }
 
 const developmentChains = ["hardhat", "localhost"]
