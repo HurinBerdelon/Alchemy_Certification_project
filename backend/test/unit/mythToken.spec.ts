@@ -25,7 +25,7 @@ describe("MythToken Contract", () => {
         externalContract = accounts[2]
         sellerUser = accounts[3]
 
-        mythToken = await deployMythToken({ log: false, updateFrontend: false })
+        mythToken = await deployMythToken({ log: false })
 
         fundUser = async (_user = user, amount = AMOUNT) => {
             const mythTokenUser = mythToken.connect(_user)

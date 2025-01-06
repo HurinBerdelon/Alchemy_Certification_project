@@ -6,8 +6,6 @@ import verify from "../utils/verify"
 import { developmentChains, mythTokenAddress, networkConfig } from "../helper-hardhat-config"
 import { deployMock } from "./00-deploy-mocks"
 import tokenUris from "../utils/tokenUris/tokenUris.json"
-import { updateContractAddress } from "../utils/updateFrontendContractAddress"
-import { updateFrontendAbi } from "../utils/updateFrontendAbi"
 
 const FUND_AMOUNT = ethers.parseEther("1000")
 
@@ -16,7 +14,6 @@ interface DeployMythNftParams {
     _mythTokenAddress?: string
     maxNumberOfCollection?: number
     log?: boolean
-    updateFrontend?: boolean
 }
 
 export const deployMythNft = async ({
@@ -24,7 +21,6 @@ export const deployMythNft = async ({
     _mythTokenAddress = mythTokenAddress,
     maxNumberOfCollection = 34,
     log = false,
-    updateFrontend = false,
 }: DeployMythNftParams) => {
     const contractName = "MythNft"
 
@@ -100,16 +96,7 @@ export const deployMythNft = async ({
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
     }
 
-    if (updateFrontend) {
-        try {
-            updateContractAddress({ contractName, address: contractAddress })
-            updateFrontendAbi({ contractName })
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
     return { mythNft, vrfCoordinatorV2_5Mock }
 }
 
-deployMythNft({ tokenUris, log: true, updateFrontend: true }).catch((error) => console.log(error))
+deployMythNft({ tokenUris, log: true }).catch((error) => console.log(error))

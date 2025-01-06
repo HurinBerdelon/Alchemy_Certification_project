@@ -36,7 +36,7 @@ describe("MythNft Contract", () => {
         const accounts = await ethers.getSigners()
         user = accounts[1]
 
-        mythToken = await deployMythToken({ log: false, updateFrontend: false })
+        mythToken = await deployMythToken({ log: false })
         const mythTokenAddress = await mythToken.getAddress()
 
         const contracts = await deployMythNft({

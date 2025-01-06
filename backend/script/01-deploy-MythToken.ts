@@ -1,15 +1,12 @@
 import { ethers, network } from "hardhat"
-import { updateContractAddress } from "../utils/updateFrontendContractAddress"
-import { updateFrontendAbi } from "../utils/updateFrontendAbi"
 import { developmentChains, initialSupply } from "../helper-hardhat-config"
 import verify from "../utils/verify"
 
 interface DeployMythToken {
     log?: boolean
-    updateFrontend?: boolean
 }
 
-export const deployMythToken = async ({ log = false, updateFrontend = false }: DeployMythToken) => {
+export const deployMythToken = async ({ log = false }: DeployMythToken) => {
     const name = "Myth Token Coin"
     const symbol = "MTC"
     const _initialSupply = BigInt(initialSupply)
@@ -28,16 +25,7 @@ export const deployMythToken = async ({ log = false, updateFrontend = false }: D
         console.log(`===> contract ${contractName} deployed to ${contractAddress}`)
     }
 
-    if (updateFrontend) {
-        try {
-            updateContractAddress({ contractName, address: contractAddress })
-            updateFrontendAbi({ contractName })
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
     return mythToken
 }
 
-deployMythToken({ log: true, updateFrontend: true }).catch((error) => console.log(error))
+deployMythToken({ log: true }).catch((error) => console.log(error))
